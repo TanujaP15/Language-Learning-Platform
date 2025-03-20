@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <span class="logo">🌐 Learn</span>
+            <a href="#">Stories</a>
+            <a href="#">Discuss</a>
+            <a href="#">More</a>
+        </div>
+        <div class="nav-right">
+            <div class="dropdown">
+                <button class="dropbtn">🇫🇷 French</button>
+                <div class="dropdown-content">
+                    <a href="#" onclick="changeLanguage('French')">🇫🇷 French</a>
+                    <a href="#" onclick="changeLanguage('Spanish')">🇪🇸 Spanish</a>
+                    <a href="#" onclick="changeLanguage('German')">🇩🇪 German</a>
+                    <a href="#" onclick="changeLanguage('Japanese')">🇯🇵 Japanese</a>
+                </div>
+            </div>
+            <span class="stats">🏆 0 🔥 0 💎 0</span>
+        </div>
+    </nav>
+
+    <!-- Lessons Section -->
+    <div class="lesson-container">
+        <div class="lesson" onclick="goToLesson(1)">
+            <div class="progress-circle"><span>✔</span></div>
+            <p>Basic Greetings</p>
+        </div>
+    </div>
+
+</body>
+</html>

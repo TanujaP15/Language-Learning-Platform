@@ -1,0 +1,326 @@
+{
+    "Spanish-English": [
+      {
+        "lesson": 1,
+        "title": "Basic Greetings",
+        "questions": [
+          {"type": "translation", "question": "Hola", "answer": "Hello"},
+          {"type": "translation", "question": "Adiós", "answer": "Goodbye"},
+          {"type": "fill_in_blank", "question": "____ tardes", "answer": "Buenas"},
+          {"type": "multiple_choice", "question": "How do you say 'Thank you'?","options": [ "Gracias", "Hola", "Sí"],"answer": "Gracias"},
+          {"type": "matching", "pairs": {"Buenos días": "Good morning", "Buenas noches": "Good night"}},
+          {"type": "sentence_transformation", "question": "Yo soy Juan.", "answer": "I am Juan."},
+          {"type": "fill_in_blank", "question": "Me ____ María.", "answer": "llamo"},
+          { "type": "multiple_choice", "question": "How do you say 'Yes'?", "options": ["Sí", "No", "Por favor"], "answer": "Sí"},
+          {"type": "translation", "question": "Nos vemos", "answer": "See you"},
+          { "type": "sentence_transformation", "question": "Ella es mi amiga.", "answer": "She is my friend."}
+        ]
+      },
+      {
+        "lesson": 2,
+        "title": "Numbers and Counting",
+        "questions": [
+          {"type": "translation", "question": "Uno", "answer": "One"},
+          {"type": "translation", "question": "Dos", "answer": "Two"},
+          {"type": "fill_in_blank", "question": "Tres, cuatro, ____", "answer": "cinco"},
+          {"type": "multiple_choice", "question": "How do you say 'Ten'?", "options": ["Cinco", "Diez", "Ocho"], "answer": "Diez"},
+          {"type": "matching", "pairs": {"Seis": "Six", "Siete": "Seven"}},
+          {"type": "sentence_transformation", "question": "Tengo dos gatos.", "answer": "I have two cats."},
+          {"type": "fill_in_blank", "question": "Ocho, nueve, ____", "answer": "diez"},
+          {"type": "multiple_choice", "question": "How do you say 'Five'?", "options": ["Uno", "Dos", "Cinco"], "answer": "Cinco"},
+          {"type": "translation", "question": "Cien", "answer": "Hundred"},
+          {"type": "sentence_transformation", "question": "Hay siete días en una semana.", "answer": "There are seven days in a week."}
+        ]
+      },
+      {
+        "lesson": 3,
+        "title": "Basic Verbs",
+        "questions": [
+          {"type": "translation", "question": "Comer", "answer": "To eat"},
+          {"type": "translation", "question": "Beber", "answer": "To drink"},
+          { "type": "fill_in_blank", "question": "Yo ____ al fútbol.", "answer": "juego"},
+          {"type": "multiple_choice", "question": "How do you say 'To read'?", "options": [ "Escribir", "Leer", "Correr"], "answer": "Leer"},
+          {"type": "matching", "pairs": { "Escribir": "To write", "Correr": "To run"}},
+          {"type": "sentence_transformation", "question": "Ella canta una canción.", "answer": "She sings a song."},
+          {"type": "fill_in_blank", "question": "Nosotros ____ en la piscina.", "answer": "nadamos"},
+          {"type": "multiple_choice", "question": "How do you say 'To sleep'?", "options": [ "Dormir", "Despertar", "Levantar"], "answer": "Dormir"},
+          {"type": "translation", "question": "Abrir","answer": "To open"},
+          {"type": "sentence_transformation", "question": "Ellos estudian español.", "answer": "They study Spanish."}
+        ]
+      },
+      {
+        "lesson": 4,
+        "title": "Common Objects",
+        "questions": [
+          {"type": "translation", "question": "Mesa", "answer": "Table"},
+          {"type": "translation","question": "Silla", "answer": "Chair"},
+          {"type": "fill_in_blank", "question": "El ____ está en la mesa.", "answer": "libro"},
+          {"type": "multiple_choice", "question": "How do you say 'Window'?", "options": [ "Puerta", "Ventana", "Techo"], "answer": "Ventana"},
+          {"type": "matching", "pairs": {"Puerta": "Door", "Ventana": "Window"}},
+          {"type": "sentence_transformation", "question": "La lámpara es nueva.", "answer": "The lamp is new."},
+          { "type": "fill_in_blank", "question": "Necesito una ____ para escribir.", "answer": "pluma"},
+          {"type": "multiple_choice", "question": "How do you say 'Notebook'?", "options": ["Cuaderno", "Libro", "Papel"], "answer": "Cuaderno"}
+        ]
+       },
+        {
+        "lesson": 5,
+        "title": "Colors",
+        "questions": [
+            {"type": "translation", "question": "Rojo", "answer": "Red"},
+            {"type": "translation", "question": "Azul", "answer": "Blue"},
+            {"type": "fill_in_blank", "question": "El cielo es ____.", "answer": "azul"},
+            {"type": "multiple_choice", "question": "How do you say 'Green'?", "options": [ "Amarillo", "Verde", "Negro"], "answer": "Verde"},
+            {"type": "matching", "pairs": {"Blanco": "White", "Negro": "Black"}},
+            {"type": "sentence_transformation", "question": "Las hojas son verdes.", "answer": "The leaves are green."},
+            {"type": "fill_in_blank", "question": "La nieve es ____.", "answer": "blanca"},
+            {"type": "multiple_choice", "question": "How do you say 'Yellow'?", "options": ["Rojo", "Amarillo", "Marrón"], "answer": "Amarillo"},
+            {"type": "translation", "question": "Gris", "answer": "Gray"},
+            {"type": "sentence_transformation", "question": "El coche es negro.", "answer": "The car is black."}
+        ]
+        },
+        {
+            "lesson": 6,
+            "title": "Family Members",
+            "questions": [
+              {"type": "translation", "question": "Madre", "answer": "Mother"},
+              {"type": "translation", "question": "Padre", "answer": "Father"},
+              {"type": "translation", "question": "Hermano", "answer": "Brother"},
+              {"type": "translation", "question": "Hermana", "answer": "Sister"},
+              {"type": "fill_in_blank", "question": "Mi ____ es muy simpática.", "answer": "hermana"},
+              {"type": "fill_in_blank", "question": "El ____ de mi madre es mi abuelo.", "answer": "padre"},
+              {"type": "multiple_choice", "question": "How do you say 'Brother'?", "options": ["Hermana", "Hermano", "Tío"], "answer": "Hermano"},
+              {"type": "multiple_choice", "question": "Who is the 'Abuela'?", "options": ["Aunt", "Grandmother", "Sister"], "answer": "Grandmother"},
+              {"type": "matching", "pairs": {"Abuelo": "Grandfather", "Abuela": "Grandmother"}},
+              {"type": "sentence_transformation", "question": "Mi primo es alto.", "answer": "My cousin is tall."}
+            ]
+          },
+          {
+            "lesson": 7,
+            "title": "Days of the Week",
+            "questions": [
+              {"type": "translation", "question": "Lunes", "answer": "Monday"},
+              {"type": "translation", "question": "Martes", "answer": "Tuesday"},
+              {"type": "translation", "question": "Miércoles", "answer": "Wednesday"},
+              {"type": "translation", "question": "Jueves", "answer": "Thursday"},
+              {"type": "translation", "question": "Viernes", "answer": "Friday"},
+              {"type": "translation", "question": "Sábado", "answer": "Saturday"},
+              {"type": "translation", "question": "Domingo", "answer": "Sunday"},
+              {"type": "fill_in_blank", "question": "El día después de martes es ____.", "answer": "miércoles"},
+              {"type": "fill_in_blank", "question": "El primer día de la semana es ____.", "answer": "lunes"},
+              {"type": "multiple_choice", "question": "How do you say 'Sunday'?", "options": ["Sábado", "Domingo", "Jueves"], "answer": "Domingo"}
+            ]
+          },
+          {
+            "lesson": 8,
+            "title": "Common Phrases",
+            "questions": [
+              {"type": "translation", "question": "¿Cómo estás?", "answer": "How are you?"},
+              {"type": "translation", "question": "Por favor", "answer": "Please"},
+              {"type": "translation", "question": "Gracias", "answer": "Thank you"},
+              {"type": "translation", "question": "De nada", "answer": "You're welcome"},
+              {"type": "translation", "question": "Lo siento", "answer": "I'm sorry"},
+              {"type": "fill_in_blank", "question": "Muchas ____.", "answer": "gracias"},
+              {"type": "fill_in_blank", "question": "Si necesitas algo, di ____.", "answer": "por favor"},
+              {"type": "multiple_choice", "question": "How do you say 'Excuse me'?", "options": ["Lo siento", "Perdón", "De nada"], "answer": "Perdón"},
+              {"type": "matching", "pairs": {"¡Hola!": "Hello!", "Adios": "Goodbye"}},
+              {"type": "sentence_transformation", "question": "Buenos días.", "answer": "Good morning."}
+            ]
+          },
+          {
+            "lesson": 9,
+            "title": "Food and Drinks",
+            "questions": [
+              {"type": "translation", "question": "Pan", "answer": "Bread"},
+              {"type": "translation", "question": "Leche", "answer": "Milk"},
+              {"type": "translation", "question": "Queso", "answer": "Cheese"},
+              {"type": "translation", "question": "Jugo", "answer": "Juice"},
+              {"type": "translation", "question": "Agua", "answer": "Water"},
+              {"type": "fill_in_blank", "question": "El ____ es dulce.", "answer": "chocolate"},
+              {"type": "fill_in_blank", "question": "Bebo ____ todos los días.", "answer": "agua"},
+              {"type": "multiple_choice", "question": "How do you say 'Apple'?", "options": ["Naranja", "Manzana", "Uva"], "answer": "Manzana"},
+              {"type": "matching", "pairs": {"Naranja": "Orange", "Uva": "Grape"}},
+              {"type": "sentence_transformation", "question": "Me gusta el pan con queso.", "answer": "I like bread with cheese."}
+            ]
+          },
+          {
+            "lesson": 10,
+            "title": "Animals",
+            "questions": [
+              {"type": "translation", "question": "Perro", "answer": "Dog"},
+              {"type": "translation", "question": "Gato", "answer": "Cat"},
+              {"type": "translation", "question": "Pez", "answer": "Fish"},
+              {"type": "translation", "question": "Oso", "answer": "Bear"},
+              {"type": "translation", "question": "Vaca", "answer": "Cow"},
+              {"type": "fill_in_blank", "question": "El ____ es un animal grande y fuerte.", "answer": "elefante"},
+              {"type": "fill_in_blank", "question": "El ____ es el mejor amigo del hombre.", "answer": "perro"},
+              {"type": "multiple_choice", "question": "How do you say 'Fish'?", "options": ["Pez", "Oso", "Vaca"], "answer": "Pez"},
+              {"type": "matching", "pairs": {"Caballo": "Horse", "Pato": "Duck"}},
+              {"type": "sentence_transformation", "question": "El gato duerme mucho.", "answer": "The cat sleeps a lot."}
+            ]
+          }
+    ],
+    "German-English": [
+        {
+            "lesson": 1,
+            "title": "Greetings and Introductions",
+            "questions": [
+              {"type": "translation", "question": "Hallo", "answer": "Hello"},
+              {"type": "translation", "question": "Guten Morgen", "answer": "Good morning"},
+              {"type": "translation", "question": "Guten Abend", "answer": "Good evening"},
+              {"type": "translation", "question": "Wie geht es dir?", "answer": "How are you?"},
+              {"type": "fill_in_blank", "question": "Ich heiße ____.", "answer": "[Name]"},
+              {"type": "fill_in_blank", "question": "Guten ____! (Morning)", "answer": "Morgen"},
+              {"type": "multiple_choice", "question": "How do you say 'Goodbye' in German?", "options": ["Hallo", "Auf Wiedersehen", "Danke"], "answer": "Auf Wiedersehen"},
+              {"type": "matching", "pairs": {"Tschüss": "Bye", "Bis bald": "See you soon"}},
+              {"type": "sentence_transformation", "question": "Ich bin Anna.", "answer": "I am Anna."},
+              {"type": "multiple_choice", "question": "What does 'Wie geht's?' mean?", "options": ["What's your name?", "How are you?", "Goodbye"], "answer": "How are you?"}
+            ]
+          },
+          {
+            "lesson": 2,
+            "title": "Numbers",
+            "questions": [
+              {"type": "translation", "question": "Eins", "answer": "One"},
+              {"type": "translation", "question": "Zwei", "answer": "Two"},
+              {"type": "translation", "question": "Drei", "answer": "Three"},
+              {"type": "translation", "question": "Vier", "answer": "Four"},
+              {"type": "translation", "question": "Fünf", "answer": "Five"},
+              {"type": "fill_in_blank", "question": "Sieben, acht, neun, ____.", "answer": "zehn"},
+              {"type": "fill_in_blank", "question": "Drei plus zwei ist ____.", "answer": "fünf"},
+              {"type": "multiple_choice", "question": "How do you say 'Ten' in German?", "options": ["Acht", "Neun", "Zehn"], "answer": "Zehn"},
+              {"type": "matching", "pairs": {"Sechs": "Six", "Sieben": "Seven"}},
+              {"type": "sentence_transformation", "question": "Ich habe drei Äpfel.", "answer": "I have three apples."}
+            ]
+          },
+          {
+            "lesson": 3,
+            "title": "Days of the Week",
+            "questions": [
+              {"type": "translation", "question": "Montag", "answer": "Monday"},
+              {"type": "translation", "question": "Dienstag", "answer": "Tuesday"},
+              {"type": "translation", "question": "Mittwoch", "answer": "Wednesday"},
+              {"type": "translation", "question": "Donnerstag", "answer": "Thursday"},
+              {"type": "translation", "question": "Freitag", "answer": "Friday"},
+              {"type": "translation", "question": "Samstag", "answer": "Saturday"},
+              {"type": "translation", "question": "Sonntag", "answer": "Sunday"},
+              {"type": "fill_in_blank", "question": "Der Tag nach Dienstag ist ____.", "answer": "Mittwoch"},
+              {"type": "fill_in_blank", "question": "Der erste Tag der Woche ist ____.", "answer": "Montag"},
+              {"type": "multiple_choice", "question": "How do you say 'Sunday' in German?", "options": ["Samstag", "Sonntag", "Donnerstag"], "answer": "Sonntag"}
+            ]
+          },
+          {
+            "lesson": 4,
+            "title": "Common Phrases",
+            "questions": [
+              {"type": "translation", "question": "Bitte", "answer": "Please"},
+              {"type": "translation", "question": "Danke", "answer": "Thank you"},
+              {"type": "translation", "question": "Entschuldigung", "answer": "Excuse me"},
+              {"type": "translation", "question": "Es tut mir leid", "answer": "I'm sorry"},
+              {"type": "translation", "question": "Wie heißen Sie?", "answer": "What is your name?"},
+              {"type": "fill_in_blank", "question": "Viele ____.", "answer": "Dank"},
+              {"type": "fill_in_blank", "question": "Wenn du Hilfe brauchst, sag ____.", "answer": "Bitte"},
+              {"type": "multiple_choice", "question": "How do you say 'You're welcome' in German?", "options": ["Bitte", "Gern geschehen", "Entschuldigung"], "answer": "Gern geschehen"},
+              {"type": "matching", "pairs": {"Guten Tag": "Good day", "Gute Nacht": "Good night"}},
+              {"type": "sentence_transformation", "question": "Ich heiße Paul.", "answer": "My name is Paul."}
+            ]
+          },
+          {
+            "lesson": 5,
+            "title": "Family Members",
+            "questions": [
+              {"type": "translation", "question": "Mutter", "answer": "Mother"},
+              {"type": "translation", "question": "Vater", "answer": "Father"},
+              {"type": "translation", "question": "Bruder", "answer": "Brother"},
+              {"type": "translation", "question": "Schwester", "answer": "Sister"},
+              {"type": "fill_in_blank", "question": "Mein ____ ist sehr nett.", "answer": "Bruder"},
+              {"type": "fill_in_blank", "question": "Der ____ meiner Mutter ist mein Opa.", "answer": "Vater"},
+              {"type": "multiple_choice", "question": "How do you say 'Grandmother' in German?", "options": ["Opa", "Oma", "Tante"], "answer": "Oma"},
+              {"type": "matching", "pairs": {"Onkel": "Uncle", "Tante": "Aunt"}},
+              {"type": "sentence_transformation", "question": "Mein Cousin ist groß.", "answer": "My cousin is tall."},
+              {"type": "multiple_choice", "question": "How do you say 'Grandfather' in German?", "options": ["Oma", "Onkel", "Opa"], "answer": "Opa"}
+            ]
+          },
+          {
+            "lesson": 6,
+            "title": "Colors",
+            "questions": [
+              {"type": "translation", "question": "Rot", "answer": "Red"},
+              {"type": "translation", "question": "Blau", "answer": "Blue"},
+              {"type": "translation", "question": "Gelb", "answer": "Yellow"},
+              {"type": "translation", "question": "Grün", "answer": "Green"},
+              {"type": "translation", "question": "Schwarz", "answer": "Black"},
+              {"type": "fill_in_blank", "question": "Die Farbe des Himmels ist ____.", "answer": "Blau"},
+              {"type": "fill_in_blank", "question": "Bananen sind ____.", "answer": "Gelb"},
+              {"type": "multiple_choice", "question": "How do you say 'White' in German?", "options": ["Schwarz", "Weiß", "Braun"], "answer": "Weiß"},
+              {"type": "matching", "pairs": {"Orange": "Orange", "Lila": "Purple"}},
+              {"type": "sentence_transformation", "question": "Das Auto ist rot.", "answer": "The car is red."}
+            ]
+          },
+          {
+            "lesson": 7,
+            "title": "Animals",
+            "questions": [
+              {"type": "translation", "question": "Hund", "answer": "Dog"},
+              {"type": "translation", "question": "Katze", "answer": "Cat"},
+              {"type": "translation", "question": "Vogel", "answer": "Bird"},
+              {"type": "translation", "question": "Fisch", "answer": "Fish"},
+              {"type": "translation", "question": "Kuh", "answer": "Cow"},
+              {"type": "fill_in_blank", "question": "Der ____ bellt.", "answer": "Hund"},
+              {"type": "fill_in_blank", "question": "Eine ____ miaut.", "answer": "Katze"},
+              {"type": "multiple_choice", "question": "How do you say 'Horse' in German?", "options": ["Hund", "Pferd", "Schaf"], "answer": "Pferd"},
+              {"type": "matching", "pairs": {"Schwein": "Pig", "Hase": "Rabbit"}},
+              {"type": "sentence_transformation", "question": "Die Kuh ist groß.", "answer": "The cow is big."}
+            ]
+          },
+          {
+            "lesson": 8,
+            "title": "Food and Drinks",
+            "questions": [
+              {"type": "translation", "question": "Apfel", "answer": "Apple"},
+              {"type": "translation", "question": "Brot", "answer": "Bread"},
+              {"type": "translation", "question": "Milch", "answer": "Milk"},
+              {"type": "translation", "question": "Wasser", "answer": "Water"},
+              {"type": "translation", "question": "Käse", "answer": "Cheese"},
+              {"type": "fill_in_blank", "question": "Ich trinke ____.", "answer": "Wasser"},
+              {"type": "fill_in_blank", "question": "Ich esse ein ____.", "answer": "Apfel"},
+              {"type": "multiple_choice", "question": "How do you say 'Juice' in German?", "options": ["Saft", "Kaffee", "Tee"], "answer": "Saft"},
+              {"type": "matching", "pairs": {"Kartoffel": "Potato", "Erdbeere": "Strawberry"}},
+              {"type": "sentence_transformation", "question": "Das Brot ist frisch.", "answer": "The bread is fresh."}
+            ]
+          },
+          {
+            "lesson": 9,
+            "title": "Body Parts",
+            "questions": [
+              {"type": "translation", "question": "Kopf", "answer": "Head"},
+              {"type": "translation", "question": "Hand", "answer": "Hand"},
+              {"type": "translation", "question": "Bein", "answer": "Leg"},
+              {"type": "translation", "question": "Auge", "answer": "Eye"},
+              {"type": "translation", "question": "Ohr", "answer": "Ear"},
+              {"type": "fill_in_blank", "question": "Ich habe zwei ____.", "answer": "Augen"},
+              {"type": "fill_in_blank", "question": "Mein ____ tut weh.", "answer": "Kopf"},
+              {"type": "multiple_choice", "question": "How do you say 'Mouth' in German?", "options": ["Hand", "Mund", "Fuss"], "answer": "Mund"},
+              {"type": "matching", "pairs": {"Nase": "Nose", "Zahn": "Tooth"}},
+              {"type": "sentence_transformation", "question": "Meine Hand ist klein.", "answer": "My hand is small."}
+            ]
+          },
+          {
+            "lesson": 10,
+            "title": "Clothing",
+            "questions": [
+              {"type": "translation", "question": "Hemd", "answer": "Shirt"},
+              {"type": "translation", "question": "Hose", "answer": "Pants"},
+              {"type": "translation", "question": "Schuhe", "answer": "Shoes"},
+              {"type": "translation", "question": "Jacke", "answer": "Jacket"},
+              {"type": "translation", "question": "Hut", "answer": "Hat"},
+              {"type": "fill_in_blank", "question": "Ich trage eine ____.", "answer": "Jacke"},
+              {"type": "fill_in_blank", "question": "Meine ____ sind neu.", "answer": "Schuhe"},
+              {"type": "multiple_choice", "question": "How do you say 'Dress' in German?", "options": ["Hose", "Kleid", "Mantel"], "answer": "Kleid"},
+              {"type": "matching", "pairs": {"Rock": "Skirt", "Socken": "Socks"}},
+              {"type": "sentence_transformation", "question": "Meine Hose ist blau.", "answer": "My pants are blue."}
+            ]
+          }
+    
+    
+    ]
+}

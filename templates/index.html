@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Learning</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <div class="logo">duolingo</div>
+        <div class="site-language">Site language: English</div>
+        <a href="{{ url_for('login') }}" class="login-btn">LOGIN</a>
+    </header>
+
+    <main>
+        <div class="globe-container">
+            <img src="{{ url_for('static', filename='images/globe.png') }}" alt="Globe">
+        </div>
+
+        <div class="content">
+            <h1 class="title">I want to learn...</h1>
+            <div class="language-options">
+                <div class="language-card"> 
+                    <img src="{{ url_for('static', filename='images/flags/spanish.png') }}" alt="Spanish"> 
+                    <p>Spanish</p> 
+                </div>
+                <div class="language-card"> 
+                    <img src="{{ url_for('static', filename='images/flags/french.png') }}" alt="French"> 
+                    <p>French</p> 
+                </div>
+                <div class="language-card"> 
+                    <img src="{{ url_for('static', filename='images/flags/german.png') }}" alt="German"> 
+                    <p>German</p> 
+                </div>
+                <div class="language-card"> 
+                    <img src="{{ url_for('static', filename='images/flags/japanese.png') }}" alt="Japanese"> 
+                    <p>Japanese</p> 
+                </div>
+            </div>
+            <!-- <button class="get-started" onclick="window.location.href='{{ url_for('login') }}'">GET STARTED</button> -->
+             <a href="{{ url_for('login') }}"><button>Get Started</button></a>
+        </div>
+    </main>
+</body>
+</html>

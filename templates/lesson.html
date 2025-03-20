@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ lesson.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #question-container, #options-container, #feedback {
+            margin-top: 20px;
+            padding: 10px;
+        }
+        input, button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+
+    <script>
+        const questions = JSON.parse('{{ lesson.questions | tojson | safe }}');
+        let currentQuestionIndex = 0;
+
+        function showQuestion() {
+            let q = questions[currentQuestionIndex];
+            let questionContainer = document.getElementById("question-container");
+            let optionsContainer = document.getElementById("options-container");
+            let feedbackContainer = document.getElementById("feedback");
+
+            questionContainer.innerHTML = "";
+            optionsContainer.innerHTML = "";
+            feedbackContainer.innerHTML = "";
+
+            if (!q) {
+                questionContainer.innerHTML = "<h2>🎉 Lesson Complete!</h2>";
+                return;
+            }
+
+            questionContainer.innerHTML = `<h2>${q.question}</h2>`;
+
+            if (q.type === "translation" || q.type === "fill_in_blank" || q.type === "sentence_transformation") {
+                optionsContainer.innerHTML = `<input type="text" id="user-answer" placeholder="Your answer">
+                                              <button onclick="checkAnswer()">Submit</button>`;
+            } else if (q.type === "multiple_choice") {
+                q.options.forEach(option => {
+                    optionsContainer.innerHTML += `<button onclick="checkAnswer('${option}')">${option}</button><br>`;
+                });
+            } else if (q.type === "matching") {
+                Object.keys(q.pairs).forEach(key => {
+                    optionsContainer.innerHTML += `<p>${key} → <input type="text" id="${key}" placeholder="Your answer"></p>`;
+                });
+                optionsContainer.innerHTML += `<button onclick="checkAnswer()">Submit</button>`;
+            }
+        }
+
+        function checkAnswer(selectedOption = null) {
+            let q = questions[currentQuestionIndex];
+            let feedbackContainer = document.getElementById("feedback");
+            let userAnswer = selectedOption || document.getElementById("user-answer")?.value || "";
+            userAnswer = userAnswer.toLowerCase().trim();
+
+            let isCorrect = false;
+            
+            //matching typeof questions
+
+            if (q.type === "matching") {
+                let correct = true;
+                Object.keys(q.pairs).forEach(key => {
+                    let userInput = document.getElementById(key).value.trim();
+                    if (userInput.toLowerCase() !== q.pairs[key].toLowerCase()) correct = false;
+                });
+                isCorrect = correct;
+            } 
+             // **Multiple Choice**
+            else if (q.type === "multiple_choice") {
+                isCorrect = (userAnswer === q.answer.toLowerCase());
+            }
+
+            // **Fill in the Blanks**
+            else if (q.type === "fill_in_the_blanks") {
+                let correctAnswers = q.answer.map(ans => ans.toLowerCase().trim()); // Convert array of answers to lowercase
+                isCorrect = correctAnswers.includes(userAnswer);
+            }
+
+            // **Translation**
+            else if (q.type === "translation") {
+                let correctAnswers = Array.isArray(q.answer) ? q.answer.map(ans => ans.toLowerCase().trim()) : [q.answer.toLowerCase().trim()];
+                isCorrect = correctAnswers.includes(userAnswer);
+            }
+
+            // **Sentence Transformation**
+            else if (q.type === "sentence_transformation") {
+                let correctAnswers = q.answer.map(ans => ans.toLowerCase().trim());
+                isCorrect = correctAnswers.includes(userAnswer);
+            }
+
+            // **General Feedback Display**
+            if (isCorrect) {
+                feedbackContainer.innerHTML = "<p style='color: green;'>✅ Correct!</p>";
+            } else {
+                feedbackContainer.innerHTML = `<p style='color: red;'>❌ Incorrect! Correct answer: <strong>${Array.isArray(q.answer) ? q.answer.join(" / ") : q.answer}</strong></p>`;
+            }
+
+            // Show 'Next Question' button
+            document.getElementById("next-btn").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+                document.getElementById("next-btn").style.display = "none";
+            } else {
+                document.getElementById("question-container").innerHTML = "<h2>🎉 Lesson Complete!</h2>";
+                document.getElementById("options-container").innerHTML = "";
+                document.getElementById("feedback").innerHTML = "";
+            }
+        }
+
+        window.onload = showQuestion;
+    </script>
+</head>
+<body>
+    <h1>{{ lesson.title }}</h1>
+    <div id="question-container"></div>
+    <div id="options-container"></div>
+    <div id="feedback"></div>
+    <button id="next-btn" onclick="nextQuestion()" style="display: none;">Next Question →</button>
+</body>
+</html>
