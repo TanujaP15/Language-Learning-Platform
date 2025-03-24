@@ -2,7 +2,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const languageDropdown = document.querySelector(".dropbtn");
     const lessonContainer = document.getElementById("lesson-container");
 
-    function changeLanguage(language) {
+    // Load selected language from localStorage or default to Spanish
+    let selectedLanguage = localStorage.getItem("selectedLanguage") || "Spanish";
+    updateLanguage(selectedLanguage);
+
+    function updateLanguage(language) {
+        localStorage.setItem("selectedLanguage", language); // Save selection in localStorage
         languageDropdown.innerHTML = getFlag(language) + " " + language;
         fetchLessons(language);
     }
@@ -17,20 +22,18 @@ document.addEventListener("DOMContentLoaded", function () {
         return flags[language] || "🌐";
     }
 
-    function goToLesson(lessonId) {
-        const selectedLanguage = languageDropdown.innerText.trim().split(" ")[1]; 
-        window.location.href = `/lesson/${lessonId}?lang=${selectedLanguage}`;
-    }
-
     function fetchLessons(language) {
-        fetch(`/dashboard?lang=${language}`)
+        fetch(`/dashboard?lang=${language}`, { headers: { "X-Requested-With": "XMLHttpRequest" } })  
             .then(response => response.json())
             .then(data => {
                 lessonContainer.innerHTML = "";
                 data.lessons.forEach(lesson => {
+                    const lessonLink = document.createElement("a");
+                    lessonLink.href = `/lesson/${lesson.lesson}?lang=${language}`;
+                    lessonLink.classList.add("lesson-link");
+
                     const lessonDiv = document.createElement("div");
                     lessonDiv.classList.add("lesson");
-                    lessonDiv.onclick = () => goToLesson(lesson.lesson);
 
                     const progressCircle = document.createElement("div");
                     progressCircle.classList.add("progress-circle");
@@ -41,11 +44,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     lessonDiv.appendChild(progressCircle);
                     lessonDiv.appendChild(lessonTitle);
-                    lessonContainer.appendChild(lessonDiv);
+                    lessonLink.appendChild(lessonDiv);
+                    lessonContainer.appendChild(lessonLink);
                 });
-            });
+            })
+            .catch(error => console.error("Error fetching lessons:", error));
     }
 
-    // Default language is Spanish
-    changeLanguage("Spanish");
+    // Attach event listeners to language dropdown options
+    document.querySelectorAll(".dropdown-content a").forEach(link => {
+        link.addEventListener("click", function (event) {
+            event.preventDefault();
+            const selectedLang = this.innerText.trim().split(" ")[1]; // Extract language
+            updateLanguage(selectedLang);
+        });
+    });
 });

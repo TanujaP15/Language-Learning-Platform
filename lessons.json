@@ -320,7 +320,330 @@
               {"type": "sentence_transformation", "question": "Meine Hose ist blau.", "answer": "My pants are blue."}
             ]
           }
-    
-    
+    ],
+    "French-English": [
+      {
+        "lesson": 1,
+        "title": "Basic Greetings",
+        "questions": [
+          {"type": "translation", "question": "Bonjour", "answer": "Good morning"},
+          {"type": "translation", "question": "Bonsoir", "answer": "Good evening"},
+          {"type": "fill_in_blank", "question": "____ ! Comment ça va ?", "answer": "Salut"},
+          {"type": "multiple_choice", "question": "How do you say 'Goodbye'?", "options": ["Bonjour", "Au revoir", "Merci"], "answer": "Au revoir"},
+          {"type": "matching", "pairs": {"Merci": "Thank you", "S'il vous plaît": "Please"}},
+          {"type": "sentence_transformation", "question": "Je m'appelle Paul.", "answer": "My name is Paul."},
+          {"type": "fill_in_blank", "question": "Ça ____ bien ?", "answer": "va"},
+          {"type": "multiple_choice", "question": "How do you say 'Yes'?", "options": ["Non", "Oui", "Peut-être"], "answer": "Oui"},
+          {"type": "translation", "question": "Bonne nuit", "answer": "Good night"},
+          {"type": "sentence_transformation", "question": "Elle est mon amie.", "answer": "She is my friend."}
+        ]
+      },
+      {
+        "lesson": 2,
+        "title": "Numbers and Counting",
+        "questions": [
+          {"type": "translation", "question": "Un", "answer": "One"},
+          {"type": "translation", "question": "Deux", "answer": "Two"},
+          {"type": "fill_in_blank", "question": "Trois, quatre, ____", "answer": "cinq"},
+          {"type": "multiple_choice", "question": "How do you say 'Ten'?", "options": ["Cinq", "Dix", "Huit"], "answer": "Dix"},
+          {"type": "matching", "pairs": {"Six": "Six", "Sept": "Seven"}},
+          {"type": "sentence_transformation", "question": "J'ai trois chats.", "answer": "I have three cats."},
+          {"type": "fill_in_blank", "question": "Huit, neuf, ____", "answer": "dix"},
+          {"type": "multiple_choice", "question": "How do you say 'Five'?", "options": ["Un", "Deux", "Cinq"], "answer": "Cinq"},
+          {"type": "translation", "question": "Cent", "answer": "Hundred"},
+          {"type": "sentence_transformation", "question": "Il y a sept jours dans une semaine.", "answer": "There are seven days in a week."}
+        ]
+      },
+      {
+        "lesson": 3,
+        "title": "Common Verbs",
+        "questions": [
+          {"type": "translation", "question": "Manger", "answer": "To eat"},
+          {"type": "translation", "question": "Boire", "answer": "To drink"},
+          {"type": "fill_in_blank", "question": "Je ____ au football.", "answer": "joue"},
+          {"type": "multiple_choice", "question": "How do you say 'To read'?", "options": ["Écrire", "Lire", "Courir"], "answer": "Lire"},
+          {"type": "matching", "pairs": {"Écrire": "To write", "Courir": "To run"}},
+          {"type": "sentence_transformation", "question": "Elle chante une chanson.", "answer": "She sings a song."},
+          {"type": "fill_in_blank", "question": "Nous ____ dans la piscine.", "answer": "nageons"},
+          {"type": "multiple_choice", "question": "How do you say 'To sleep'?", "options": ["Dormir", "Réveiller", "Lever"], "answer": "Dormir"},
+          {"type": "translation", "question": "Ouvrir", "answer": "To open"},
+          {"type": "sentence_transformation", "question": "Ils étudient le français.", "answer": "They study French."}
+        ]
+      },
+      {
+        "lesson": 4,
+        "title": "Common Objects",
+        "questions": [
+          {"type": "translation", "question": "Table", "answer": "Table"},
+          {"type": "translation", "question": "Chaise", "answer": "Chair"},
+          {"type": "fill_in_blank", "question": "Le ____ est sur la table.", "answer": "livre"},
+          {"type": "multiple_choice", "question": "How do you say 'Window'?", "options": ["Porte", "Fenêtre", "Toit"], "answer": "Fenêtre"},
+          {"type": "matching", "pairs": {"Porte": "Door", "Fenêtre": "Window"}},
+          {"type": "sentence_transformation", "question": "La lampe est nouvelle.", "answer": "The lamp is new."},
+          {"type": "fill_in_blank", "question": "J'ai besoin d'un ____ pour écrire.", "answer": "stylo"},
+          {"type": "multiple_choice", "question": "How do you say 'Notebook'?", "options": ["Cahier", "Livre", "Papier"], "answer": "Cahier"},
+          {"type": "translation", "question": "Sac", "answer": "Bag"},
+          {"type": "sentence_transformation", "question": "La montre est chère.", "answer": "The watch is expensive."}
+        ]
+      },
+      {
+        "lesson": 5,
+        "title": "Colors",
+        "questions": [
+          {"type": "translation", "question": "Rouge", "answer": "Red"},
+          {"type": "translation", "question": "Bleu", "answer": "Blue"},
+          {"type": "fill_in_blank", "question": "Le ciel est ____.", "answer": "bleu"},
+          {"type": "multiple_choice", "question": "How do you say 'Green'?", "options": ["Jaune", "Vert", "Noir"], "answer": "Vert"},
+          {"type": "matching", "pairs": {"Blanc": "White", "Noir": "Black"}},
+          {"type": "sentence_transformation", "question": "Les feuilles sont vertes.", "answer": "The leaves are green."},
+          {"type": "fill_in_blank", "question": "La neige est ____.", "answer": "blanche"},
+          {"type": "multiple_choice", "question": "How do you say 'Yellow'?", "options": ["Rouge", "Jaune", "Marron"], "answer": "Jaune"},
+          {"type": "translation", "question": "Gris", "answer": "Gray"},
+          {"type": "sentence_transformation", "question": "La voiture est noire.", "answer": "The car is black."}
+        ]
+      },
+      {
+        "lesson": 6,
+        "title": "Family and Relationships",
+        "questions": [
+          {"type": "translation", "question": "Mère", "answer": "Mother"},
+          {"type": "translation", "question": "Père", "answer": "Father"},
+          {"type": "fill_in_blank", "question": "Mon ____ est très gentil.", "answer": "frère"},
+          {"type": "multiple_choice", "question": "How do you say 'Grandmother'?", "options": ["Sœur", "Grand-mère", "Fille"], "answer": "Grand-mère"},
+          {"type": "matching", "pairs": {"Mari": "Husband", "Femme": "Wife"}},
+          {"type": "sentence_transformation", "question": "Mon frère est étudiant.", "answer": "My brother is a student."},
+          {"type": "fill_in_blank", "question": "Elle est ma ____.", "answer": "sœur"},
+          {"type": "multiple_choice", "question": "How do you say 'Son'?", "options": ["Fils", "Fille", "Neveu"], "answer": "Fils"},
+          {"type": "translation", "question": "Oncle", "answer": "Uncle"},
+          {"type": "sentence_transformation", "question": "Ils sont mes parents.", "answer": "They are my parents."}
+        ]
+      },
+      {
+        "lesson": 7,
+        "title": "Days, Months, and Seasons",
+        "questions": [
+          {"type": "translation", "question": "Lundi", "answer": "Monday"},
+          {"type": "translation", "question": "Janvier", "answer": "January"},
+          {"type": "fill_in_blank", "question": "Aujourd'hui, c'est ____.", "answer": "mercredi"},
+          {"type": "multiple_choice", "question": "How do you say 'Summer'?", "options": ["Hiver", "Été", "Printemps"], "answer": "Été"},
+          {"type": "matching", "pairs": {"Automne": "Autumn", "Hiver": "Winter"}},
+          {"type": "sentence_transformation", "question": "Mon anniversaire est en avril.", "answer": "My birthday is in April."},
+          {"type": "fill_in_blank", "question": "Juillet est un mois ____.", "answer": "d'été"},
+          {"type": "multiple_choice", "question": "How do you say 'Sunday'?", "options": ["Samedi", "Dimanche", "Jeudi"], "answer": "Dimanche"},
+          {"type": "translation", "question": "Février", "answer": "February"},
+          {"type": "sentence_transformation", "question": "Nous sommes en automne.", "answer": "We are in autumn."}
+        ]
+      },
+      {
+        "lesson": 8,
+        "title": "Food and Drinks",
+        "questions": [
+          {"type": "translation", "question": "Pain", "answer": "Bread"},
+          {"type": "translation", "question": "Eau", "answer": "Water"},
+          {"type": "fill_in_blank", "question": "Je veux un ____.", "answer": "café"},
+          {"type": "multiple_choice", "question": "How do you say 'Cheese'?", "options": ["Fromage", "Pomme", "Sucre"], "answer": "Fromage"},
+          {"type": "matching", "pairs": {"Lait": "Milk", "Thé": "Tea"}},
+          {"type": "sentence_transformation", "question": "Elle mange une pomme.", "answer": "She eats an apple."},
+          {"type": "fill_in_blank", "question": "Il boit du ____.", "answer": "jus"},
+          {"type": "multiple_choice", "question": "How do you say 'Chicken'?", "options": ["Bœuf", "Poulet", "Poisson"], "answer": "Poulet"},
+          {"type": "translation", "question": "Poisson", "answer": "Fish"},
+          {"type": "sentence_transformation", "question": "J'aime le chocolat.", "answer": "I like chocolate."}
+        ]
+      },
+      {
+        "lesson": 9,
+        "title": "Travel and Transportation",
+        "questions": [
+          {"type": "translation", "question": "Voiture", "answer": "Car"},
+          {"type": "translation", "question": "Train", "answer": "Train"},
+          {"type": "fill_in_blank", "question": "Je prends le ____ pour aller à Paris.", "answer": "métro"},
+          {"type": "multiple_choice", "question": "How do you say 'Airport'?", "options": ["Gare", "Aéroport", "Route"], "answer": "Aéroport"},
+          {"type": "matching", "pairs": {"Bus": "Bus", "Avion": "Plane"}},
+          {"type": "sentence_transformation", "question": "Nous allons en Espagne en avion.", "answer": "We are going to Spain by plane."},
+          {"type": "fill_in_blank", "question": "Le taxi est très ____.", "answer": "cher"},
+          {"type": "multiple_choice", "question": "How do you say 'Ticket'?", "options": ["Billet", "Passeport", "Sac"], "answer": "Billet"},
+          {"type": "translation", "question": "Vélo", "answer": "Bicycle"},
+          {"type": "sentence_transformation", "question": "Je vais à l'école à pied.", "answer": "I go to school by foot."}
+        ]
+      },
+      {
+        "lesson": 10,
+        "title": "Common Phrases and Expressions",
+        "questions": [
+          {"type": "translation", "question": "Comment ça va ?", "answer": "How are you?"},
+          {"type": "translation", "question": "Je ne sais pas.", "answer": "I don’t know."},
+          {"type": "fill_in_blank", "question": "Où est la ____ ?", "answer": "toilette"},
+          {"type": "multiple_choice", "question": "How do you say 'See you later'?", "options": ["À plus tard", "Bonne journée", "Enchanté"], "answer": "À plus tard"},
+          {"type": "matching", "pairs": {"Bonne journée": "Have a nice day", "D'accord": "Okay"}},
+          {"type": "sentence_transformation", "question": "Pouvez-vous répéter ?", "answer": "Can you repeat?"},
+          {"type": "fill_in_blank", "question": "C'est ____ !", "answer": "magnifique"},
+          {"type": "multiple_choice", "question": "How do you say 'Excuse me'?", "options": ["Désolé", "Excusez-moi", "Merci"], "answer": "Excusez-moi"},
+          {"type": "translation", "question": "Je suis désolé", "answer": "I am sorry"},
+          {"type": "sentence_transformation", "question": "C'est une bonne idée.", "answer": "That is a good idea."}
+        ]
+      }
+    ],
+    "Japanese-English": [
+      {
+        "lesson": 1,
+        "title": "Basic Greetings",
+        "questions": [
+          {"type": "translation", "question": "こんにちは", "answer": "Hello"},
+          {"type": "translation", "question": "さようなら", "answer": "Goodbye"},
+          {"type": "fill_in_blank", "question": "____ はじめまして", "answer": "こんにちは"},
+          {"type": "multiple_choice", "question": "How do you say 'Good morning'?", "options": ["こんばんは", "おはよう", "ありがとう"], "answer": "おはよう"},
+          {"type": "matching", "pairs": {"ありがとう": "Thank you", "すみません": "Excuse me / Sorry"}},
+          {"type": "sentence_transformation", "question": "私の名前は田中です。", "answer": "My name is Tanaka."},
+          {"type": "fill_in_blank", "question": "お ____ なさい", "answer": "やすみ"},
+          {"type": "multiple_choice", "question": "How do you say 'Good evening'?", "options": ["こんばんは", "おはよう", "おやすみ"], "answer": "こんばんは"},
+          {"type": "translation", "question": "またね", "answer": "See you later"},
+          {"type": "sentence_transformation", "question": "よろしくお願いします。", "answer": "Nice to meet you."}
+        ]
+      },
+      {
+        "lesson": 2,
+        "title": "Numbers and Counting",
+        "questions": [
+          {"type": "translation", "question": "一", "answer": "One"},
+          {"type": "translation", "question": "二", "answer": "Two"},
+          {"type": "fill_in_blank", "question": "三、四、____", "answer": "五"},
+          {"type": "multiple_choice", "question": "How do you say 'Ten'?", "options": ["五", "七", "十"], "answer": "十"},
+          {"type": "matching", "pairs": {"六": "Six", "七": "Seven"}},
+          {"type": "sentence_transformation", "question": "私は五つりんごを持っています。", "answer": "I have five apples."},
+          {"type": "fill_in_blank", "question": "八、九、____", "answer": "十"},
+          {"type": "multiple_choice", "question": "How do you say 'Four'?", "options": ["四", "七", "三"], "answer": "四"},
+          {"type": "translation", "question": "百", "answer": "Hundred"},
+          {"type": "sentence_transformation", "question": "一週間は七日あります。", "answer": "There are seven days in a week."}
+        ]
+      },
+      {
+        "lesson": 3,
+        "title": "Basic Verbs",
+        "questions": [
+          {"type": "translation", "question": "食べる", "answer": "To eat"},
+          {"type": "translation", "question": "飲む", "answer": "To drink"},
+          {"type": "fill_in_blank", "question": "私は水を ____ 。", "answer": "飲む"},
+          {"type": "multiple_choice", "question": "How do you say 'To read'?", "options": ["書く", "読む", "走る"], "answer": "読む"},
+          {"type": "matching", "pairs": {"書く": "To write", "走る": "To run"}},
+          {"type": "sentence_transformation", "question": "彼女は歌を歌います。", "answer": "She sings a song."},
+          {"type": "fill_in_blank", "question": "私たちは公園で ____ 。", "answer": "遊ぶ"},
+          {"type": "multiple_choice", "question": "How do you say 'To sleep'?", "options": ["寝る", "起きる", "学ぶ"], "answer": "寝る"},
+          {"type": "translation", "question": "開ける", "answer": "To open"},
+          {"type": "sentence_transformation", "question": "彼らは日本語を勉強します。", "answer": "They study Japanese."}
+        ]
+      },
+      {
+        "lesson": 4,
+        "title": "Common Objects",
+        "questions": [
+          {"type": "translation", "question": "机", "answer": "Table"},
+          {"type": "translation", "question": "椅子", "answer": "Chair"},
+          {"type": "fill_in_blank", "question": "本は ____ の上にあります。", "answer": "机"},
+          {"type": "multiple_choice", "question": "How do you say 'Window'?", "options": ["ドア", "窓", "天井"], "answer": "窓"},
+          {"type": "matching", "pairs": {"ドア": "Door", "窓": "Window"}},
+          {"type": "sentence_transformation", "question": "このランプは新しいです。", "answer": "This lamp is new."},
+          {"type": "fill_in_blank", "question": "私は ____ で書きます。", "answer": "ペン"},
+          {"type": "multiple_choice", "question": "How do you say 'Notebook'?", "options": ["ノート", "本", "紙"], "answer": "ノート"},
+          {"type": "translation", "question": "携帯電話", "answer": "Mobile phone"},
+          {"type": "sentence_transformation", "question": "彼はパソコンを使っています。", "answer": "He is using a computer."}
+        ]
+      },
+      {
+        "lesson": 5,
+        "title": "Colors",
+        "questions": [
+          {"type": "translation", "question": "赤", "answer": "Red"},
+          {"type": "translation", "question": "青", "answer": "Blue"},
+          {"type": "fill_in_blank", "question": "空は ____ 。", "answer": "青"},
+          {"type": "multiple_choice", "question": "How do you say 'Green'?", "options": ["黄色", "緑", "黒"], "answer": "緑"},
+          {"type": "matching", "pairs": {"白": "White", "黒": "Black"}},
+          {"type": "sentence_transformation", "question": "葉っぱは緑色です。", "answer": "The leaves are green."},
+          {"type": "fill_in_blank", "question": "雪は ____ 。", "answer": "白"},
+          {"type": "multiple_choice", "question": "How do you say 'Yellow'?", "options": ["赤", "黄色", "茶色"], "answer": "黄色"},
+          {"type": "translation", "question": "灰色", "answer": "Gray"},
+          {"type": "sentence_transformation", "question": "その車は黒いです。", "answer": "The car is black."}
+        ]
+      },
+      {
+        "lesson": 6,
+        "title": "Family & People",
+        "questions": [
+          {"type": "translation", "question": "父", "answer": "Father"},
+          {"type": "translation", "question": "母", "answer": "Mother"},
+          {"type": "fill_in_blank", "question": "これは私の ____ です。", "answer": "父"},
+          {"type": "multiple_choice", "question": "How do you say 'Brother'?", "options": ["姉", "弟", "叔父"], "answer": "弟"},
+          {"type": "matching", "pairs": {"姉": "Older sister", "妹": "Younger sister"}},
+          {"type": "sentence_transformation", "question": "私は三人家族です。", "answer": "I have a family of three."},
+          {"type": "fill_in_blank", "question": "私の ____ は医者です。", "answer": "母"},
+          {"type": "multiple_choice", "question": "How do you say 'Grandfather'?", "options": ["祖母", "叔父", "祖父"], "answer": "祖父"},
+          {"type": "translation", "question": "友達", "answer": "Friend"},
+          {"type": "sentence_transformation", "question": "彼は私の親友です。", "answer": "He is my best friend."}
+        ]
+      },
+      {
+        "lesson": 7,
+        "title": "Food & Drinks",
+        "questions": [
+          {"type": "translation", "question": "ご飯", "answer": "Rice"},
+          {"type": "translation", "question": "パン", "answer": "Bread"},
+          {"type": "fill_in_blank", "question": "私は毎朝 ____ を食べます。", "answer": "パン"},
+          {"type": "multiple_choice", "question": "How do you say 'Tea'?", "options": ["水", "お茶", "コーヒー"], "answer": "お茶"},
+          {"type": "matching", "pairs": {"りんご": "Apple", "バナナ": "Banana"}},
+          {"type": "sentence_transformation", "question": "私はオレンジジュースが好きです。", "answer": "I like orange juice."},
+          {"type": "fill_in_blank", "question": "カレーは ____ 料理です。", "answer": "インド"},
+          {"type": "multiple_choice", "question": "How do you say 'Milk'?", "options": ["ミルク", "水", "ジュース"], "answer": "ミルク"},
+          {"type": "translation", "question": "魚", "answer": "Fish"},
+          {"type": "sentence_transformation", "question": "寿司は魚とご飯で作られます。", "answer": "Sushi is made with fish and rice."}
+        ]
+      },
+      {
+        "lesson": 8,
+        "title": "Places & Directions",
+        "questions": [
+          {"type": "translation", "question": "駅", "answer": "Station"},
+          {"type": "translation", "question": "学校", "answer": "School"},
+          {"type": "fill_in_blank", "question": "私は毎日 ____ に行きます。", "answer": "学校"},
+          {"type": "multiple_choice", "question": "How do you say 'Hospital'?", "options": ["公園", "病院", "空港"], "answer": "病院"},
+          {"type": "matching", "pairs": {"右": "Right", "左": "Left"}},
+          {"type": "sentence_transformation", "question": "図書館は学校の隣にあります。", "answer": "The library is next to the school."},
+          {"type": "fill_in_blank", "question": "私は駅で ____ を待っています。", "answer": "電車"},
+          {"type": "multiple_choice", "question": "How do you say 'Airport'?", "options": ["空港", "病院", "駅"], "answer": "空港"},
+          {"type": "translation", "question": "郵便局", "answer": "Post office"},
+          {"type": "sentence_transformation", "question": "交差点を右に曲がってください。", "answer": "Turn right at the intersection."}
+        ]
+      },
+      {
+        "lesson": 9,
+        "title": "Daily Activities",
+        "questions": [
+          {"type": "translation", "question": "起きる", "answer": "To wake up"},
+          {"type": "translation", "question": "寝る", "answer": "To sleep"},
+          {"type": "fill_in_blank", "question": "私は毎朝七時に ____ 。", "answer": "起きる"},
+          {"type": "multiple_choice", "question": "How do you say 'To go to work'?", "options": ["働く", "出勤する", "勉強する"], "answer": "出勤する"},
+          {"type": "matching", "pairs": {"食事する": "To have a meal", "掃除する": "To clean"}},
+          {"type": "sentence_transformation", "question": "毎日運動するのは健康に良いです。", "answer": "Exercising every day is good for your health."},
+          {"type": "fill_in_blank", "question": "私は夜十時に ____ 。", "answer": "寝る"},
+          {"type": "multiple_choice", "question": "How do you say 'To take a shower'?", "options": ["洗う", "浴びる", "泳ぐ"], "answer": "浴びる"},
+          {"type": "translation", "question": "勉強する", "answer": "To study"},
+          {"type": "sentence_transformation", "question": "彼は毎日日本語を勉強します。", "answer": "He studies Japanese every day."}
+        ]
+      },
+      {
+        "lesson": 10,
+        "title": "Common Phrases",
+        "questions": [
+          {"type": "translation", "question": "お元気ですか？", "answer": "How are you?"},
+          {"type": "translation", "question": "これはいくらですか？", "answer": "How much is this?"},
+          {"type": "fill_in_blank", "question": "____ お願いします。", "answer": "これを"},
+          {"type": "multiple_choice", "question": "How do you say 'Excuse me'?", "options": ["ありがとう", "すみません", "おやすみ"], "answer": "すみません"},
+          {"type": "matching", "pairs": {"お願いします": "Please", "大丈夫です": "I'm okay"}},
+          {"type": "sentence_transformation", "question": "手伝ってください。", "answer": "Please help me."},
+          {"type": "fill_in_blank", "question": "私は ____ です。", "answer": "学生"},
+          {"type": "multiple_choice", "question": "How do you say 'I don’t understand'?", "options": ["わかりません", "知りません", "できます"], "answer": "わかりません"},
+          {"type": "translation", "question": "大好きです", "answer": "I love it"},
+          {"type": "sentence_transformation", "question": "日本語を話せますか？", "answer": "Can you speak Japanese?"}
+        ]
+      }
     ]
+        
 }

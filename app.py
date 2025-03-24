@@ -32,22 +32,22 @@ def login():
 
 @app.route('/dashboard')
 def dashboard():
-    lang = request.args.get("lang", "Spanish")  # Default to Spanish
-    lessons = lessons_data.get(f"{lang}-English", [])
+    lang = request.args.get("lang", "Spanish")  # Get language from query params (default to Spanish)
+    lessons = lessons_data.get(f"{lang}-English", [])  # Fetch lessons dynamically
 
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':  # Check if it's an AJAX request
-        return jsonify({"lessons": lessons})
-    
-    return render_template("dashboard.html", lessons=lessons, language=lang)
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':  
+        return jsonify({"lessons": lessons})  # Return lessons for AJAX calls
+
+    return render_template("dashboard.html", lessons=lessons, language=lang)  # Render template for normal requests
 
 @app.route('/lesson/<int:lesson_id>')
 def lesson_page(lesson_id):
-    lang = request.args.get("lang", "Spanish")
+    lang = request.args.get("lang", "Spanish")   #Default to Spanish
     lessons = lessons_data.get(f"{lang}-English", [])
 
     lesson = next((lesson for lesson in lessons if lesson.get("lesson") == lesson_id), None)
     if lesson:
-        return render_template("lesson.html", lesson=lesson)
+        return render_template("lesson.html", lesson=lesson, language=lang)
     
     return jsonify({"error": "Lesson not found", "lesson_id": lesson_id}), 404
 
