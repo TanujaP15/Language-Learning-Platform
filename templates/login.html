@@ -5,6 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+    <style>
+        /* Center the login box */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-box {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.forgot-password {
+    text-align: right;
+    margin-bottom: 10px;
+}
+
+.login-btn {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.or-text {
+    margin: 15px 0;
+    font-weight: bold;
+}
+
+.social-login button {
+    width: 48%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.facebook {
+    background-color: #3b5998;
+    color: white;
+}
+
+.google {
+    background-color: #db4437;
+    color: white;
+}
+
+.signup-text {
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+    </style>
 </head>
 <body>
     <div class="login-container">
@@ -16,15 +98,9 @@
             <form action="{{ url_for('login') }}" method="POST">
                 <input type="text" name="email" placeholder="Email or Username" required>
                 <input type="password" name="password" placeholder="Password" required>
-                <div class="forgot-password">
-                    <a href="#">FORGOT?</a>
-                </div>
+
                 <button type="submit" class="login-btn">LOG IN</button>
-                <p class="or-text">OR</p>
-                <div class="social-login">
-                    <button class="facebook">Facebook</button>
-                    <button class="google">Google</button>
-                </div>
+
                 <p class="signup-text">By signing in to the platform, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
             </form>
         </div>

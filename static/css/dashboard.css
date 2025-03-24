@@ -6,20 +6,13 @@ body {
     text-align: center;
 }
 
-/* Navbar Styling */
+/* Navbar */
 .navbar {
     display: flex;
     justify-content: space-between;
     padding: 10px 20px;
     background-color: white;
     border-bottom: 2px solid #ddd;
-}
-
-.nav-left a {
-    text-decoration: none;
-    color: black;
-    margin: 0 15px;
-    font-size: 16px;
 }
 
 .nav-left .logo {
@@ -32,11 +25,6 @@ body {
     align-items: center;
 }
 
-.stats {
-    margin-left: 15px;
-}
-
-/* Dropdown Styling */
 .dropdown {
     position: relative;
     display: inline-block;
@@ -53,8 +41,8 @@ body {
     display: none;
     position: absolute;
     background-color: white;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     min-width: 120px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .dropdown-content a {
@@ -64,20 +52,17 @@ body {
     color: black;
 }
 
-.dropdown-content a:hover {
-    background-color: #f1f1f1;
-}
-
 .dropdown:hover .dropdown-content {
     display: block;
 }
 
 /* Lesson Grid */
 .lesson-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 50px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 30px;
+    padding: 20px;
+    justify-items: center;
 }
 
 .lesson {

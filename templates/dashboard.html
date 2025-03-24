@@ -3,40 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Language Dashboard</title>
+    <title>Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
     <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </head>
 <body>
 
-    <!-- Top Navigation -->
-    <nav class="navbar">
+    <div class="navbar">
         <div class="nav-left">
-            <span class="logo">🌐 Learn</span>
-            <a href="#">Stories</a>
-            <a href="#">Discuss</a>
-            <a href="#">More</a>
+            <span class="logo">Language Learning</span>
         </div>
         <div class="nav-right">
             <div class="dropdown">
-                <button class="dropbtn">🇫🇷 French</button>
+                <button class="dropbtn">🇪🇸 Spanish</button>
                 <div class="dropdown-content">
-                    <a href="#" onclick="changeLanguage('French')">🇫🇷 French</a>
                     <a href="#" onclick="changeLanguage('Spanish')">🇪🇸 Spanish</a>
+                    <a href="#" onclick="changeLanguage('French')">🇫🇷 French</a>
                     <a href="#" onclick="changeLanguage('German')">🇩🇪 German</a>
                     <a href="#" onclick="changeLanguage('Japanese')">🇯🇵 Japanese</a>
                 </div>
             </div>
-            <span class="stats">🏆 0 🔥 0 💎 0</span>
         </div>
-    </nav>
+    </div>
 
-    <!-- Lessons Section -->
-    <div class="lesson-container">
-        <div class="lesson" onclick="goToLesson(1)">
-            <div class="progress-circle"><span>✔</span></div>
-            <p>Basic Greetings</p>
-        </div>
+    <h1>Welcome to Your Dashboard</h1>
+
+    <div class="lesson-container" id="lesson-container">
+        {% for lesson in lessons %}
+        <a href="{{ url_for('lesson_page', lesson_id=lesson.lesson) }}" class="lesson-link">
+            <div class="lesson">
+                <div class="progress-circle">{{ lesson.lesson }}</div>
+                <p>{{ lesson.title }}</p>
+            </div>
+        </a>
+        {% endfor %}
     </div>
 
 </body>
