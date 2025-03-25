@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
     <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </head>
@@ -11,7 +12,7 @@
 
     <div class="navbar">
         <div class="nav-left">
-            <span class="logo">Language Learning</span>
+            <span class="logo">🟢 Language Learning</span>
         </div>
         <div class="nav-right">
             <div class="dropdown">
@@ -28,16 +29,23 @@
 
     <h1>Welcome to Your Dashboard</h1>
 
+    <!-- Lessons Grid -->
     <div class="lesson-container" id="lesson-container">
         {% for lesson in lessons %}
-        <a href="{{ url_for('lesson_page', lesson_id=lesson.lesson) }}" class="lesson-link">
-            <div class="lesson">
+            <a href="{{ url_for('lesson_page', lesson_id=lesson.lesson) }}" class="lesson-card {% if lesson.lesson not in completed_lessons and lesson.lesson > 1 %}locked{% endif %}">
                 <div class="progress-circle">{{ lesson.lesson }}</div>
-                <p>{{ lesson.title }}</p>
-            </div>
-        </a>
+                <p class="lesson-title">{{ lesson.title }}</p>
+                {% if lesson.lesson > 1 and lesson.lesson not in completed_lessons %}
+                    <span class="lock-icon">🔒</span>
+                {% endif %}
+            </a>
         {% endfor %}
+    
     </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 
 </body>
 </html>

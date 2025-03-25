@@ -2,12 +2,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const languageDropdown = document.querySelector(".dropbtn");
     const lessonContainer = document.getElementById("lesson-container");
 
-    // Load selected language from localStorage or default to Spanish
     let selectedLanguage = localStorage.getItem("selectedLanguage") || "Spanish";
+    let completedLessons = JSON.parse(localStorage.getItem("completedLessons")) || [];
+
     updateLanguage(selectedLanguage);
 
     function updateLanguage(language) {
-        localStorage.setItem("selectedLanguage", language); // Save selection in localStorage
+        localStorage.setItem("selectedLanguage", language);
         languageDropdown.innerHTML = getFlag(language) + " " + language;
         fetchLessons(language);
     }
@@ -27,35 +28,42 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.json())
             .then(data => {
                 lessonContainer.innerHTML = "";
-                data.lessons.forEach(lesson => {
+
+                data.lessons.forEach((lesson, index) => {
                     const lessonLink = document.createElement("a");
                     lessonLink.href = `/lesson/${lesson.lesson}?lang=${language}`;
-                    lessonLink.classList.add("lesson-link");
+                    lessonLink.classList.add("lesson-card");
 
-                    const lessonDiv = document.createElement("div");
-                    lessonDiv.classList.add("lesson");
+                    if (!completedLessons.includes(lesson.lesson) && index > 0) {
+                        lessonLink.classList.add("locked");
+                        lessonLink.href = "#"; // Prevent navigation for locked lessons
+                    }
 
                     const progressCircle = document.createElement("div");
                     progressCircle.classList.add("progress-circle");
                     progressCircle.innerText = lesson.lesson;
 
                     const lessonTitle = document.createElement("p");
+                    lessonTitle.classList.add("lesson-title");
                     lessonTitle.innerText = lesson.title;
 
-                    lessonDiv.appendChild(progressCircle);
-                    lessonDiv.appendChild(lessonTitle);
-                    lessonLink.appendChild(lessonDiv);
+                    if (completedLessons.includes(lesson.lesson)) {
+                        lessonLink.classList.add("completed");
+                        lessonLink.innerHTML += " ✅";
+                    }
+
+                    lessonLink.appendChild(progressCircle);
+                    lessonLink.appendChild(lessonTitle);
                     lessonContainer.appendChild(lessonLink);
                 });
             })
             .catch(error => console.error("Error fetching lessons:", error));
     }
 
-    // Attach event listeners to language dropdown options
     document.querySelectorAll(".dropdown-content a").forEach(link => {
         link.addEventListener("click", function (event) {
             event.preventDefault();
-            const selectedLang = this.innerText.trim().split(" ")[1]; // Extract language
+            const selectedLang = this.innerText.trim().split(" ")[1];
             updateLanguage(selectedLang);
         });
     });
