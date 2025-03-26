@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const lessonContainer = document.getElementById("lesson-container");
 
     let selectedLanguage = localStorage.getItem("selectedLanguage") || "Spanish";
-    let completedLessons = JSON.parse(localStorage.getItem("completedLessons")) || [];
 
     updateLanguage(selectedLanguage);
 
@@ -28,13 +27,15 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.json())
             .then(data => {
                 lessonContainer.innerHTML = "";
+                let completedLessons = data.completed || [];  // Fetch completed lessons from Flask
 
                 data.lessons.forEach((lesson, index) => {
                     const lessonLink = document.createElement("a");
                     lessonLink.href = `/lesson/${lesson.lesson}?lang=${language}`;
                     lessonLink.classList.add("lesson-card");
 
-                    if (!completedLessons.includes(lesson.lesson) && index > 0) {
+                    // Lock lessons if previous lesson is not completed
+                    if (!completedLessons.includes(lesson.lesson - 1) && lesson.lesson > 1) {
                         lessonLink.classList.add("locked");
                         lessonLink.href = "#"; // Prevent navigation for locked lessons
                     }

@@ -32,7 +32,8 @@
     <!-- Lessons Grid -->
     <div class="lesson-container" id="lesson-container">
         {% for lesson in lessons %}
-            <a href="{{ url_for('lesson_page', lesson_id=lesson.lesson) }}" class="lesson-card {% if lesson.lesson not in completed_lessons and lesson.lesson > 1 %}locked{% endif %}">
+        <a href="{{ url_for('lesson_page', lesson_id=lesson.lesson) }}" 
+           class="lesson-card {% if lesson.lesson - 1 not in completed_lessons and lesson.lesson > 1 %}locked{% endif %}">        
                 <div class="progress-circle">{{ lesson.lesson }}</div>
                 <p class="lesson-title">{{ lesson.title }}</p>
                 {% if lesson.lesson > 1 and lesson.lesson not in completed_lessons %}

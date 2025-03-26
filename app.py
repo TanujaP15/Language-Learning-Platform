@@ -121,12 +121,12 @@ def logout():
 # Dashboard Route
 @app.route('/dashboard')
 def dashboard():
-    if "user" not in session:  # Redirect to login if user is not logged in
+    if "user" not in session:
         flash("Please log in to access the dashboard.", "warning")
         return redirect(url_for('login'))
 
-    lang = request.args.get("lang", "Spanish")  # Default to Spanish
-    lessons = lessons_data.get(f"{lang}-English", [])  # Fetch lessons dynamically
+    lang = request.args.get("lang", "Spanish")
+    lessons = lessons_data.get(f"{lang}-English", [])
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -135,7 +135,7 @@ def dashboard():
     conn.close()
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':  
-        return jsonify({"lessons": lessons, "completed": completed_lessons})  # Return lessons & progress for AJAX calls
+        return jsonify({"lessons": lessons, "completed": completed_lessons})  # ✅ Return completed lessons
 
     return render_template("dashboard.html", lessons=lessons, language=lang, user=session["user"], completed_lessons=completed_lessons)
 
@@ -154,6 +154,38 @@ def lesson_page(lesson_id):
         return render_template("lesson.html", lesson=lesson, language=lang)
     
     return jsonify({"error": "Lesson not found", "lesson_id": lesson_id}), 404
+
+@app.route('/complete_lesson/<int:lesson_id>', methods=['POST'])
+def complete_lesson(lesson_id):
+    if "user" not in session:
+        return jsonify({"error": "User not logged in"}), 403
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Check if the lesson is already completed
+    cursor.execute("SELECT completed FROM progress WHERE user_email = ? AND lesson_id = ?", (session["user"], lesson_id))
+    row = cursor.fetchone()
+
+    if row and row["completed"]:
+        conn.close()
+        return jsonify({"message": "Lesson already completed!"})
+
+    # Mark lesson as completed
+    cursor.execute("INSERT OR REPLACE INTO progress (user_email, lesson_id, completed) VALUES (?, ?, 1)", 
+                   (session["user"], lesson_id))
+    conn.commit()
+    
+    # Unlock next lesson
+    next_lesson = lesson_id + 1
+    cursor.execute("INSERT OR IGNORE INTO progress (user_email, lesson_id, completed) VALUES (?, ?, 0)", 
+                   (session["user"], next_lesson))
+    
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Lesson marked as completed!", "next_lesson": next_lesson})
+
 
 if __name__ == "__main__":
     app.run(debug=True)

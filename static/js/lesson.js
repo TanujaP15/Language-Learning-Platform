@@ -13,7 +13,12 @@ function loadQuestion() {
         // Mark lesson as completed
         fetch(`/complete_lesson/${lessonId}`, { method: "POST" })
             .then(response => response.json())
-            .then(data => console.log(data.message));
+            .then(data => {
+                console.log(data.message);
+                alert("Lesson Completed! Next lesson unlocked.");
+                window.location.href = "/dashboard";  // Redirect to dashboard
+            });
+    
 
         return;
     }
