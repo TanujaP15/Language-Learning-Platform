@@ -8,52 +8,83 @@
     <script defer src="{{ url_for('static', filename='js/lesson.js') }}"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             background-color: #f8f9fa;
             text-align: center;
             padding: 20px;
         }
 
-        h1 {
-            margin-bottom: 20px;
+        .lesson-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: auto;
         }
 
-        #question-container, #options-container, #feedback {
+        #question-container h2 {
+            font-size: 24px;
+        }
+
+        #answer-area {
             margin-top: 20px;
         }
 
-        input, button {
-            margin: 5px;
-            padding: 10px;
+        .btn {
             font-size: 16px;
+            padding: 10px 15px;
         }
 
-        button {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
+        #progress-container {
+            width: 100%;
+            background-color: #ddd;
+            margin: 20px 0;
         }
 
-        button:hover {
-            background-color: #0056b3;
+        #progress-bar {
+            height: 10px;
+            background-color: #28a745;
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        #hearts-container {
+            font-size: 20px;
+            margin-bottom: 10px;
         }
 
     </style>
 </head>
 <body>
 
-    <div class="container text-center mt-4">
+
+    <div class="lesson-container">
+        <div class="d-flex justify-content-center align-items-center">
+            <h2 id="hearts-container" class="text-danger">❤️ x5</h2>
+        </div>
+        
         <h1>{{ lesson.title }}</h1>
-        <div id="question-container" class="mt-3"></div>
-        <div id="options-container" class="mt-3"></div>
-        <div id="feedback" class="mt-3"></div>
-        <button id="next-btn" class="btn btn-success mt-3" style="display: none;" onclick="nextQuestion()">Next Question →</button>
+
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        
+        <!-- Hearts Container -->
+        <!-- <div id="hearts-container" class="hearts">❤️ x5</div> -->
+
+        <div id="question-container"></div>
+        <div id="answer-area"></div>
+        <div id="feedback"></div>
+        
+        <button id="check-answer-btn" onclick="checkAnswer()" disabled>Check Answer</button>
+        <button id="next-btn" onclick="nextQuestion()" style="display: none;">Next Question →</button>
     </div>
-        <script>
+
+    <script>
         const lessonQuestions = {{ lesson.questions | tojson | safe }};
         const lessonId = {{ lesson.lesson }};
     </script>
+
 </body>
 </html>

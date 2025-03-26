@@ -17,7 +17,8 @@
         <div class="nav-right">
 
             <span id="hearts-container">❤️ x{{ hearts }}</span>
-
+            <p id="heart-timer" style="color: red;"></p> <!-- Countdown timer for next heart -->
+            
             <div class="dropdown">
                 <button class="dropbtn">🇪🇸 Spanish</button>
                 <div class="dropdown-content">
@@ -48,7 +49,7 @@
              <div class="progress-circle">{{ lesson.lesson }}</div>
              <p class="lesson-title">{{ lesson.title }}</p>
              {% if lesson.lesson > 1 and lesson.lesson not in completed_lessons %}
-                 <span class="lock-icon">🔒</span>
+                 <!-- <span class="lock-icon"></span> -->
              {% endif %}
          </a>
         {% endfor %}

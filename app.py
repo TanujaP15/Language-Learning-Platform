@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 
 load_dotenv()
 
+HEART_REGEN_TIME = 900
+
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 
@@ -126,48 +128,61 @@ def logout():
     flash("You have been logged out.", "info")
     return redirect(url_for('login'))
 
-# Get Hearts Route
-@app.route('/get_hearts')
+@app.route("/get_hearts")
 def get_hearts():
     if "user" not in session:
-        return jsonify({"error": "User not logged in"}), 403
-
+        return jsonify({"error": "Not logged in"}), 403
+    
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT hearts, last_heart_time FROM users WHERE email = ?", (session["user"],))
     user = cursor.fetchone()
-
+    
+    if not user:
+        conn.close()
+        return jsonify({"error": "User not found"}), 404
+    
     hearts = user["hearts"]
     last_heart_time = datetime.strptime(user["last_heart_time"], "%Y-%m-%d %H:%M:%S")
 
-    # Regain hearts every hour
-    if hearts < 5:
-        elapsed_time = datetime.now() - last_heart_time
-        hearts_regained = min(5 - hearts, elapsed_time.total_seconds() // 3600)
+    # Check if we need to regenerate hearts
+    now = datetime.now()
+    time_diff = (now - last_heart_time).total_seconds() / 60  # Convert to minutes
+    
+    hearts_to_regen = int(time_diff // HEART_REGEN_TIME)  # Number of hearts to regen
+    if hearts_to_regen > 0 and hearts < 5:
+        new_hearts = min(hearts + hearts_to_regen, 5)  # Ensure max 5 hearts
+        cursor.execute("UPDATE users SET hearts = ?, last_heart_time = ? WHERE email = ?", 
+                       (new_hearts, now.strftime("%Y-%m-%d %H:%M:%S"), session["user"]))
+        conn.commit()
+        hearts = new_hearts
 
-        if hearts_regained > 0:
-            hearts += int(hearts_regained)
-            cursor.execute("UPDATE users SET hearts = ?, last_heart_time = ? WHERE email = ?", 
-                           (hearts, datetime.now(), session["user"]))
-            conn.commit()
-
+    # Calculate time left for next heart (if not full)
+    time_left = max(HEART_REGEN_TIME - (time_diff % HEART_REGEN_TIME), 0) if hearts < 5 else 0
+    
     conn.close()
-    return jsonify({"hearts": hearts})
+    return jsonify({"hearts": hearts, "time_left": int(time_left)})  # Return both hearts & time left
 
-# Lose Heart Route
-@app.route('/lose_heart', methods=['POST'])
+@app.route("/lose_heart", methods=["POST"])
 def lose_heart():
     if "user" not in session:
-        return jsonify({"error": "User not logged in"}), 403
+        return jsonify({"error": "Not logged in"}), 403
 
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT hearts FROM users WHERE email = ?", (session["user"],))
-    hearts = cursor.fetchone()["hearts"]
+    user = cursor.fetchone()
+    
+    if not user:
+        conn.close()
+        return jsonify({"error": "User not found"}), 404
+
+    hearts = user["hearts"]
 
     if hearts > 0:
         hearts -= 1
-        cursor.execute("UPDATE users SET hearts = ? WHERE email = ?", (hearts, session["user"]))
+        cursor.execute("UPDATE users SET hearts = ?, last_heart_time = ? WHERE email = ?", 
+                       (hearts, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), session["user"]))
         conn.commit()
 
     conn.close()
@@ -185,17 +200,20 @@ def dashboard():
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT lesson_id FROM progress WHERE user_email = ? AND completed = 1", (session["user"],))
+
+    cursor.execute("SELECT lesson_id FROM progress WHERE user_email = ? AND completed = 1 AND language = ?", (session["user"],lang))
     completed_lessons = [row["lesson_id"] for row in cursor.fetchall()]
+  
     cursor.execute("SELECT hearts FROM users WHERE email = ?", (session["user"],))
     hearts = cursor.fetchone()["hearts"]    
     conn.close()
 
-    # if request.headers.get('X-Requested-With') == 'XMLHttpRequest':  
-    #     return jsonify({"lessons": lessons, "completed": completed_lessons})  # ✅ Return completed lessons
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':  
+        return jsonify({"lessons": lessons, "completed": completed_lessons, "hearts": hearts})  # ✅ Return completed lessons
 
     return render_template("dashboard.html", lessons=lessons, language=lang, user=session["user"], 
                            completed_lessons=completed_lessons, hearts=hearts)
+
 # Lesson Route
 @app.route('/lesson/<int:lesson_id>')
 def lesson_page(lesson_id):
@@ -217,11 +235,12 @@ def complete_lesson(lesson_id):
     if "user" not in session:
         return jsonify({"error": "User not logged in"}), 403
 
+    lang = request.args.get("lang", "Spanish")
     conn = get_db_connection()
     cursor = conn.cursor()
     
     # Check if the lesson is already completed
-    cursor.execute("SELECT completed FROM progress WHERE user_email = ? AND lesson_id = ?", (session["user"], lesson_id))
+    cursor.execute("SELECT completed FROM progress WHERE user_email = ? AND lesson_id = ? AND language = ?", (session["user"], lesson_id, lang))
     row = cursor.fetchone()
 
     if row and row["completed"]:
@@ -229,20 +248,25 @@ def complete_lesson(lesson_id):
         return jsonify({"message": "Lesson already completed!"})
 
     # Mark lesson as completed
-    cursor.execute("INSERT OR REPLACE INTO progress (user_email, lesson_id, completed) VALUES (?, ?, 1)", 
-                   (session["user"], lesson_id))
+    cursor.execute("INSERT OR REPLACE INTO progress (user_email, lesson_id, language, completed) VALUES (?, ?, ?, 1)", 
+                   (session["user"], lesson_id, lang))
     conn.commit()
     
     # Unlock next lesson
     next_lesson = lesson_id + 1
-    cursor.execute("INSERT OR IGNORE INTO progress (user_email, lesson_id, completed) VALUES (?, ?, 0)", 
-                   (session["user"], next_lesson))
-    
+    cursor.execute("INSERT OR IGNORE INTO progress (user_email, lesson_id, language, completed) VALUES (?, ?, ?, 0)", 
+                   (session["user"], next_lesson, lang))
     conn.commit()
+
+    # Fetch updated completed lessons list
+    cursor.execute("SELECT lesson_id FROM progress WHERE user_email = ? AND completed = 1 AND language = ?", (session["user"],lang))
+    completed_lessons = [row["lesson_id"] for row in cursor.fetchall()]
+
     conn.close()
 
-    return jsonify({"message": "Lesson marked as completed!", "next_lesson": next_lesson})
-
+    return jsonify({"message": "Lesson marked as completed!", 
+                    "next_lesson": next_lesson, 
+                    "completed_lessons": completed_lessons})
 
 if __name__ == "__main__":
     app.run(debug=True)
