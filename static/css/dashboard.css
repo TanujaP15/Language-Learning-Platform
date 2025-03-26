@@ -24,6 +24,7 @@ body {
 .nav-right {
     display: flex;
     align-items: center;
+    gap: 20px;
 }
 
 .dropdown {
@@ -138,4 +139,23 @@ body {
 
 .lesson-card.completed {
     background: #c8e6c9;  /* Green background for completed lessons */
+}
+
+#hearts-container {
+    font-size: 18px;
+    color: red;
+    font-weight: bold;
+}
+
+.logout-btn {
+    background-color: red;
+    color: white;
+    padding: 8px 12px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.logout-btn:hover {
+    background-color: darkred;
 }

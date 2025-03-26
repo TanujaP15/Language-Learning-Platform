@@ -15,6 +15,9 @@
             <span class="logo">🟢 Language Learning</span>
         </div>
         <div class="nav-right">
+
+            <span id="hearts-container">❤️ x{{ hearts }}</span>
+
             <div class="dropdown">
                 <button class="dropbtn">🇪🇸 Spanish</button>
                 <div class="dropdown-content">
@@ -23,23 +26,31 @@
                     <a href="#" onclick="changeLanguage('German')">🇩🇪 German</a>
                     <a href="#" onclick="changeLanguage('Japanese')">🇯🇵 Japanese</a>
                 </div>
-            </div>            
+            </div>  
+            
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+
         </div>
     </div>
 
-    <h1>Welcome to Your Dashboard</h1>
+    <h1>Welcome, {{user}}! </h1>
+
+    {% if hearts == 0 %}
+        <p style="color: red;">You have no hearts left! Wait for hearts to regenerate.</p>
+    {% endif %}
 
     <!-- Lessons Grid -->
     <div class="lesson-container" id="lesson-container">
         {% for lesson in lessons %}
-        <a href="{{ url_for('lesson_page', lesson_id=lesson.lesson) }}" 
-           class="lesson-card {% if lesson.lesson - 1 not in completed_lessons and lesson.lesson > 1 %}locked{% endif %}">        
-                <div class="progress-circle">{{ lesson.lesson }}</div>
-                <p class="lesson-title">{{ lesson.title }}</p>
-                {% if lesson.lesson > 1 and lesson.lesson not in completed_lessons %}
-                    <span class="lock-icon">🔒</span>
-                {% endif %}
-            </a>
+        <a href="{% if hearts > 0 %}{{ url_for('lesson_page', lesson_id=lesson.lesson) }}{% else %}#{% endif %}"
+            class="lesson-card {% if lesson.lesson - 1 not in completed_lessons and lesson.lesson > 1 %}locked{% endif %}
+                 {% if hearts == 0 %}locked{% endif %}">
+             <div class="progress-circle">{{ lesson.lesson }}</div>
+             <p class="lesson-title">{{ lesson.title }}</p>
+             {% if lesson.lesson > 1 and lesson.lesson not in completed_lessons %}
+                 <span class="lock-icon">🔒</span>
+             {% endif %}
+         </a>
         {% endfor %}
     
     </div>

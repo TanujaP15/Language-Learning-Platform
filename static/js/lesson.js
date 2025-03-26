@@ -66,7 +66,18 @@ function checkAnswer(selectedOption = null) {
 
     if (isCorrect) {
         feedbackContainer.innerHTML = "<p class='text-success'>✅ Correct!</p>";
-    } else {
+    }  else {
+        fetch("/lose_heart", { method: "POST" }) // Lose heart if wrong
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("hearts-container").innerText = `❤️ x${data.hearts}`;
+
+                if (data.hearts === 0) {
+                    alert("No hearts left! Wait for hearts to regenerate.");
+                    window.location.href = "/dashboard";
+                }
+            });
+
         feedbackContainer.innerHTML = `<p class='text-danger'>❌ Incorrect! Correct answer: <strong>${q.answer}</strong></p>`;
     }
 

@@ -1,10 +1,15 @@
 import sqlite3
 import json
+import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash  # Secure passwords
+from dotenv import load_dotenv
+from datetime import datetime, timedelta
+
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "d4f40074b6653f5d389ea76ab38b0ba349e1d020b6d5333e29e10f2de110d5df"  # Required for session management
+app.secret_key = os.getenv("SECRET_KEY")
 
 # Load lessons.json with error handling
 try:
@@ -27,12 +32,15 @@ AVAILABLE_LANGUAGES = ["Spanish", "French", "German", "Japanese"]
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             fullname TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
+            password TEXT NOT NULL,
+            hearts INTEGER DEFAULT 5,
+            last_heart_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP           
         )
     """)
 
@@ -118,6 +126,53 @@ def logout():
     flash("You have been logged out.", "info")
     return redirect(url_for('login'))
 
+# Get Hearts Route
+@app.route('/get_hearts')
+def get_hearts():
+    if "user" not in session:
+        return jsonify({"error": "User not logged in"}), 403
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT hearts, last_heart_time FROM users WHERE email = ?", (session["user"],))
+    user = cursor.fetchone()
+
+    hearts = user["hearts"]
+    last_heart_time = datetime.strptime(user["last_heart_time"], "%Y-%m-%d %H:%M:%S")
+
+    # Regain hearts every hour
+    if hearts < 5:
+        elapsed_time = datetime.now() - last_heart_time
+        hearts_regained = min(5 - hearts, elapsed_time.total_seconds() // 3600)
+
+        if hearts_regained > 0:
+            hearts += int(hearts_regained)
+            cursor.execute("UPDATE users SET hearts = ?, last_heart_time = ? WHERE email = ?", 
+                           (hearts, datetime.now(), session["user"]))
+            conn.commit()
+
+    conn.close()
+    return jsonify({"hearts": hearts})
+
+# Lose Heart Route
+@app.route('/lose_heart', methods=['POST'])
+def lose_heart():
+    if "user" not in session:
+        return jsonify({"error": "User not logged in"}), 403
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT hearts FROM users WHERE email = ?", (session["user"],))
+    hearts = cursor.fetchone()["hearts"]
+
+    if hearts > 0:
+        hearts -= 1
+        cursor.execute("UPDATE users SET hearts = ? WHERE email = ?", (hearts, session["user"]))
+        conn.commit()
+
+    conn.close()
+    return jsonify({"hearts": hearts})
+
 # Dashboard Route
 @app.route('/dashboard')
 def dashboard():
@@ -132,13 +187,15 @@ def dashboard():
     cursor = conn.cursor()
     cursor.execute("SELECT lesson_id FROM progress WHERE user_email = ? AND completed = 1", (session["user"],))
     completed_lessons = [row["lesson_id"] for row in cursor.fetchall()]
+    cursor.execute("SELECT hearts FROM users WHERE email = ?", (session["user"],))
+    hearts = cursor.fetchone()["hearts"]    
     conn.close()
 
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':  
-        return jsonify({"lessons": lessons, "completed": completed_lessons})  # ✅ Return completed lessons
+    # if request.headers.get('X-Requested-With') == 'XMLHttpRequest':  
+    #     return jsonify({"lessons": lessons, "completed": completed_lessons})  # ✅ Return completed lessons
 
-    return render_template("dashboard.html", lessons=lessons, language=lang, user=session["user"], completed_lessons=completed_lessons)
-
+    return render_template("dashboard.html", lessons=lessons, language=lang, user=session["user"], 
+                           completed_lessons=completed_lessons, hearts=hearts)
 # Lesson Route
 @app.route('/lesson/<int:lesson_id>')
 def lesson_page(lesson_id):
