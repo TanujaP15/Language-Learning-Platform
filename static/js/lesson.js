@@ -1,5 +1,6 @@
 let currentQuestionIndex = 0;
 let hearts = 5; // Default hearts (updated from server)
+let heartRegenerationTime = 900;
 
 document.addEventListener("DOMContentLoaded", function () {
     fetchHearts();  // Get hearts count from server
@@ -12,13 +13,45 @@ function fetchHearts() {
         .then(response => response.json())
         .then(data => {
             hearts = data.hearts;
+            heartRegenerationTime = data.time_left || 900;
             updateHearts();
+            if (hearts === 0) startHeartTimer();
         });
 }
 
 // Update hearts display
 function updateHearts() {
-    document.getElementById("hearts-container").innerText = `❤️ x${hearts}`;
+    let heartContainer = document.getElementById("hearts-container");
+    heartContainer.innerHTML = "";
+    for (let i = 0; i < hearts; i++) {
+        heartContainer.innerHTML += "❤️";
+    }
+    if (hearts === 0) {
+        heartContainer.innerHTML += ` <span id="heart-timer">⌛ ${formatTime(heartRegenerationTime)}</span>`;
+        startHeartTimer();
+    }
+}
+
+
+// Start the heart regeneration timer
+function startHeartTimer() {
+    let timerElement = document.getElementById("heart-timer");
+    let timer = setInterval(() => {
+        if (heartRegenerationTime <= 0) {
+            clearInterval(timer);
+            fetchHearts();
+        } else {
+            heartRegenerationTime--;
+            timerElement.innerText = `⌛ ${formatTime(heartRegenerationTime)}`;
+        }
+    }, 1000);
+}
+
+// Format time as MM:SS
+function formatTime(seconds) {
+    let minutes = Math.floor(seconds / 60);
+    let secs = seconds % 60;
+    return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
 }
 
 function updateProgress() {
@@ -97,57 +130,84 @@ function checkAnswer(selectedOption = null) {
     let feedbackContainer = document.getElementById("feedback");
     let isCorrect = false;
 
+    if (!q) {
+        console.error("Question not found!");
+        return;
+    }
+
     if (q.type === "matching") {
-        let correct = true;
-        Object.keys(q.pairs).forEach(key => {
-            let userInputField = document.getElementById(key);
-            if (!userInputField) return; // Prevent errors if input not found
-        
-            let userInput = userInputField.value.trim();
-            if (userInput.toLowerCase() !== q.pairs[key].toLowerCase()) {
-                correct = false;
-            }
-        });
-        isCorrect = correct;
+        isCorrect = checkMatchingAnswer(q.pairs);
     } else {
-        let userAnswer = selectedOption || document.getElementById("user-answer")?.value?.trim() || "";
+        let userAnswer = selectedOption || document.getElementById("user-answer")?.value?.trim();
         if (!userAnswer) {
             alert("⚠️ Please enter an answer!");
             return;
         }
-
-        let correctAnswers = Array.isArray(q.answer) ? q.answer.map(ans => ans.toLowerCase().trim()) : [q.answer.toLowerCase().trim()];
-        isCorrect = correctAnswers.includes(userAnswer.toLowerCase());
+        isCorrect = checkTextAnswer(userAnswer, q.answer);
     }
 
-    if (isCorrect) {
-        feedbackContainer.innerHTML = "<p class='text-success'>✅ Correct!</p>";
-    } else {
-        feedbackContainer.innerHTML = `<p class='text-danger'>❌ Incorrect! Correct answer: <strong>${q.answer}</strong></p>`;
-        
-        // Lose a heart if the answer is wrong
-        fetch("/lose_heart", { method: "POST" })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    hearts = data.hearts;
-                    updateHearts();
-                    if (hearts === 0) {
-                        alert("❌ No hearts left! Please wait for hearts to regenerate.");
-                        window.location.href = "/dashboard";
-                    }
-                } else {
-                    alert("Error updating hearts. Please try again.");
-                }
-            })
-            .catch(error => {
-                console.error("Error losing heart:", error);
-                alert("Network error. Please try again.");
-            });
+    showFeedback(isCorrect, q.answer);
+    if (!isCorrect) handleIncorrectAnswer();
+    
+    document.getElementById("next-btn").style.display = "block";
+}
 
-    }
+// ✅ Helper function to check Matching type answers
+function checkMatchingAnswer(correctPairs) {
+    return Object.keys(correctPairs).every(key => {
+        let userInputField = document.getElementById(key);
+        return userInputField && userInputField.value.trim().toLowerCase() === correctPairs[key].toLowerCase();
+    });
+}
 
-    document.getElementById("next-btn").style.display = "block"; 
+// ✅ Helper function to check text-based answers (translation, fill in blank, etc.)
+function checkTextAnswer(userAnswer, correctAnswer) {
+    let correctAnswers = Array.isArray(correctAnswer) ? 
+        correctAnswer.map(ans => ans.toLowerCase().trim()) : 
+        [correctAnswer.toLowerCase().trim()];
+    
+    return correctAnswers.includes(userAnswer.toLowerCase());
+}
+
+// ✅ Display correct or incorrect feedback
+function showFeedback(isCorrect, correctAnswer) {
+    let feedbackContainer = document.getElementById("feedback");
+    feedbackContainer.innerHTML = isCorrect ? 
+        "<p class='text-success'>✅ Correct!</p>" : 
+        `<p class='text-danger'>❌ Incorrect! Correct answer: <strong>${correctAnswer}</strong></p>`;
+}
+
+// ✅ Handle incorrect answers (lose a heart, animate UI)
+function handleIncorrectAnswer() {
+    fetch("/lose_heart", { method: "POST" })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                hearts = data.hearts; // Update hearts count from server
+                updateHearts(); // Update UI
+                animateHeartLoss();
+            } else {
+                console.error("Error losing heart:", data.error);
+            }
+        })
+        .catch(error => console.error("Fetch error:", error));
+}
+
+
+// Animate heart loss in the navbar
+function animateHeartLoss() {
+    let heartContainer = document.getElementById("hearts-container");
+    let lostHeart = document.createElement("span");
+    lostHeart.innerHTML = "💔";
+    lostHeart.style.color = "red";
+    lostHeart.style.marginLeft = "5px";
+    lostHeart.style.transition = "opacity 0.5s ease-in-out";
+    heartContainer.appendChild(lostHeart);
+
+    setTimeout(() => {
+        lostHeart.style.opacity = "0";
+        setTimeout(() => lostHeart.remove(), 500);
+    }, 500);
 }
 
 // Move to next question
