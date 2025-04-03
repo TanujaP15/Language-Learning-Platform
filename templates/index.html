@@ -3,44 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Language Learning</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Welcome | LinguaLearn</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Optional - Example: Nunito, matches dashboard potentially) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Link to your new landing page specific CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
 </head>
 <body>
-    <header>
-        <div class="logo">duolingo</div>
-        <div class="site-language">Site language: English</div>
-        <a href="{{ url_for('login') }}" class="login-btn">LOGIN</a>
+    <!-- Use semantic header -->
+    <header class="landing-header">
+        <!-- Consistent Branding -->
+        <div class="brand-container">
+            <div class="brand-logo">
+                <i class="fas fa-language"></i> <!-- Use FontAwesome icon -->
+            </div>
+            <span class="brand-name">LinguaLearn</span>
+        </div>
+        <!-- Login Button with Bootstrap styling -->
+        <a href="{{ url_for('login') }}" class="btn btn-outline-primary login-btn">LOGIN</a>
     </header>
 
-    <main>
-        <div class="globe-container">
-            <img src="{{ url_for('static', filename='images/globe.png') }}" alt="Globe">
-        </div>
+    <!-- Use semantic main -->
+    <main class="landing-main">
+        <!-- Inner container for content alignment -->
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-md-10"> <!-- Control content width -->
+                    <div class="landing-content-inner">
+                        <div class="globe-container">
+                            <!-- Use url_for for the globe image -->
+                            <img src="{{ url_for('static', filename='images/globe.png') }}" alt="Globe Illustration">
+                        </div>
 
-        <div class="content">
-            <h1 class="title">I want to learn...</h1>
-            <div class="language-options">
-                <div class="language-card"> 
-                    <img src="{{ url_for('static', filename='images/flags/spanish.png') }}" alt="Spanish"> 
-                    <p>Spanish</p> 
-                </div>
-                <div class="language-card"> 
-                    <img src="{{ url_for('static', filename='images/flags/french.png') }}" alt="French"> 
-                    <p>French</p> 
-                </div>
-                <div class="language-card"> 
-                    <img src="{{ url_for('static', filename='images/flags/german.png') }}" alt="German"> 
-                    <p>German</p> 
-                </div>
-                <div class="language-card"> 
-                    <img src="{{ url_for('static', filename='images/flags/japanese.png') }}" alt="Japanese"> 
-                    <p>Japanese</p> 
+                        <h1 class="landing-title">The free, fun and effective way to learn a language!</h1>
+
+                        <p class="lead mb-4">Get started learning one of these languages today.</p> <!-- Added descriptive text -->
+
+                        <div class="language-options">
+                            <!-- Use url_for for flag images -->
+                            <div class="language-card">
+                                <img src="{{ url_for('static', filename='images/flags/spanish.png') }}" alt="Spanish Flag">
+                                <p>Spanish</p>
+                            </div>
+                            <div class="language-card">
+                                <img src="{{ url_for('static', filename='images/flags/french.png') }}" alt="French Flag">
+                                <p>French</p>
+                            </div>
+                            <div class="language-card">
+                                <img src="{{ url_for('static', filename='images/flags/german.png') }}" alt="German Flag">
+                                <p>German</p>
+                            </div>
+                            <div class="language-card">
+                                <img src="{{ url_for('static', filename='images/flags/japanese.png') }}" alt="Japanese Flag">
+                                <p>Japanese</p>
+                            </div>
+                            <!-- Add more languages as needed -->
+                        </div>
+
+                        <!-- Link wraps the button for cleaner HTML -->
+                        <a href="{{ url_for('login') }}" class="btn btn-success btn-lg get-started-btn">Get Started</a>
+                    </div>
                 </div>
             </div>
-            <!-- <button class="get-started" onclick="window.location.href='{{ url_for('login') }}'">GET STARTED</button> -->
-             <a href="{{ url_for('login') }}"><button>Get Started</button></a>
         </div>
     </main>
+
+    <!-- Optional: Bootstrap JS Bundle (only needed if using JS components) -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
 </body>
 </html>

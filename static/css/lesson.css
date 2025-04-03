@@ -1,59 +1,299 @@
+/* static/css/lesson.css */
+
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f7f7f7;
-    text-align: center;
-    padding: 20px;
+    background-color: #f8f9fa; /* Light background for the lesson page */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align container to the top */
+    min-height: 100vh;
+    padding-top: 20px; /* Add some padding at the top */
+    font-family: 'Nunito', sans-serif; /* Consistent font */
 }
 
-h1 {
-    margin-bottom: 20px;
+.lesson-container {
+    background-color: #ffffff;
+    border-radius: 15px;
+    padding: 20px 30px 30px 30px;
+    max-width: 700px; /* Control maximum width */
+    width: 90%; /* Responsive width */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    min-height: 400px; /* Minimum height */
 }
 
-.quiz-container {
-    background: white;
-    padding: 20px;
+/* Header */
+.lesson-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 15px; /* Space between items */
+}
+
+.back-button {
+    font-size: 1.5rem;
+    color: #adb5bd; /* Light grey */
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+.back-button:hover {
+    color: #6c757d; /* Darker grey */
+}
+
+.progress-container {
+    flex-grow: 1; /* Takes up available space */
+    height: 15px;
+    background-color: #e9ecef;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    width: 50%;
-    margin: auto;
+    overflow: hidden; /* Ensures fill stays within bounds */
 }
 
-.question-block {
-    margin-bottom: 20px;
+.progress-bar-fill {
+    height: 100%;
+    background-color: #58cc02; /* Duolingo green */
+    border-radius: 10px;
+    transition: width 0.3s ease-in-out; /* Smooth progress animation */
+    width: 0%; /* Start at 0 */
 }
 
-#answer-area input, 
-#answer-area select {
+.lesson-hearts-display {
+    display: flex;
+    align-items: center;
+    color: #ff4b4b; /* Red for hearts */
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+.lesson-hearts-display i {
+    margin-right: 5px;
+    font-size: 1.3rem;
+}
+
+/* Main Content */
+.lesson-content {
+    flex-grow: 1; /* Takes available vertical space */
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+#lesson-title-display {
+    color: #4a4a4a;
+    margin-bottom: 30px;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+#question-area {
+    margin-bottom: 25px;
+    min-height: 60px; /* Ensure space even for short questions */
+}
+#question-instruction {
+    color: #777;
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+#question-text {
+    color: #333;
+    font-size: 1.6rem; /* Larger font for the question */
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+/* Dynamic Input Area */
+#answer-input-area {
+    margin-bottom: 25px;
+    min-height: 50px; /* Reserve space */
+}
+
+#answer-input-area input[type="text"] {
     width: 80%;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
+    max-width: 400px;
     padding: 10px 15px;
-    font-size: 16px;
+    font-size: 1.2rem;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    text-align: center;
+    transition: border-color 0.2s ease;
+}
+#answer-input-area input[type="text"]:focus {
+    border-color: #777;
+    outline: none;
+}
+
+/* Styling for fill-in-the-blank input */
+#answer-input-area .fill-blank-input {
+    width: 100px; /* Adjust as needed */
+    margin: 0 5px;
+    display: inline-block; /* Keep it inline */
+    vertical-align: baseline;
+}
+
+/* Multiple Choice Options */
+.mc-option {
+    display: block;
+    margin: 10px auto;
+    padding: 12px 20px;
+    border: 2px solid #e5e5e5;
+    border-radius: 10px;
     cursor: pointer;
-    border-radius: 5px;
-    transition: 0.3s;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    width: 80%;
+    max-width: 400px;
+    text-align: left; /* Align text left within button */
+    font-size: 1.1rem;
+}
+.mc-option input[type="radio"] {
+    margin-right: 10px;
+    vertical-align: middle; /* Align radio button nicely */
+}
+.mc-option:hover {
+    background-color: #f1f1f1;
+    border-color: #c5c5c5;
+}
+.mc-option.selected {
+    background-color: #e0f2ff; /* Light blue when selected */
+    border-color: #7cc5ff;
 }
 
-button:hover {
-    background-color: #0056b3;
+/* Feedback Area */
+.feedback {
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    min-height: 50px; /* Reserve space */
+    display: flex; /* Use flexbox for alignment */
+    align-items: center;
+    justify-content: space-between; /* Space between message and continue button */
+    opacity: 0; /* Initially hidden */
+    transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+.feedback.visible {
+    opacity: 1;
 }
 
-.option {
-    text-align: left;
-    margin: 5px 0;
+.feedback.correct {
+    background-color: #d7ffb8; /* Light green */
+    color: #58a700;
+    border: 2px solid #a3e077;
+}
+.feedback.incorrect {
+    background-color: #ffdfe0; /* Light red */
+    color: #ea2b2b;
+    border: 2px solid #ffb3b3;
+}
+
+/* Input Styling on Feedback */
+#answer-input-area input[type="text"].correct,
+.mc-option.correct {
+    border-color: #58a700;
+    background-color: #f0fff0;
+}
+#answer-input-area input[type="text"].incorrect,
+.mc-option.incorrect {
+    border-color: #ea2b2b;
+    background-color: #fff0f0;
+}
+.mc-option.incorrect.selected {
+     background-color: #ffdfe0; /* Ensure selected incorrect stays red */
+}
+
+
+/* Footer / Controls */
+.lesson-footer {
+    margin-top: auto; /* Pushes footer to the bottom */
+    padding-top: 20px; /* Space above buttons */
+    border-top: 1px solid #e9ecef; /* Separator line */
+    text-align: center;
+}
+
+.lesson-footer .btn {
+    padding: 12px 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 10px;
+    min-width: 120px;
+}
+
+.check-btn {
+    background-color: #58a700; /* Green */
+    border-color: #58a700;
+}
+.check-btn:hover {
+    background-color: #4aa000;
+    border-color: #4aa000;
+}
+.check-btn:disabled {
+    background-color: #d3d3d3;
+    border-color: #d3d3d3;
+    cursor: not-allowed;
+}
+
+.continue-btn {
+     background-color: #58cc02; /* Brighter Green */
+     border-color: #58cc02;
+     color: white;
+}
+.continue-btn:hover {
+     background-color: #4caf00;
+     border-color: #4caf00;
+}
+
+/* Matching Question Styles */
+.matching-container {
+    display: flex;
+    justify-content: space-around; /* Space out columns */
+    margin-top: 15px;
+    margin-bottom: 15px;
+    width: 90%;
+    max-width: 500px; /* Adjust as needed */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.match-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between items in a column */
+    width: 45%; /* Width of each column */
 }
 
 .match-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 0;
+    padding: 10px 15px;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.match-item:hover {
+    background-color: #f1f1f1;
+    border-color: #c5c5c5;
+}
+
+.match-item.selected {
+    background-color: #cce5ff; /* Light blue for selection */
+    border-color: #7abaff;
+    font-weight: bold;
+}
+
+/* Styles after checking */
+.match-item.correct-pair {
+    background-color: #d7ffb8; /* Light green */
+    border-color: #a3e077;
+    cursor: default; /* Not clickable anymore */
+    opacity: 0.7;
+}
+
+.match-item.incorrect-pair {
+    background-color: #ffdfe0; /* Light red */
+    border-color: #ffb3b3;
+    cursor: default; /* Not clickable anymore */
+}
+
+/* Add a subtle indication for the originally selected wrong pair */
+.match-item.incorrect-pair.selected {
+     outline: 2px dashed #ea2b2b; /* Dashed red outline */
 }

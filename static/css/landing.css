@@ -1,0 +1,181 @@
+/* static/css/landing.css */
+
+/* --- Base Styles --- */
+body {
+    font-family: 'Nunito', sans-serif; /* Match dashboard font if possible, or choose a clean sans-serif */
+    background-color: #eef2f7; /* Lighter background than dashboard? Or match it? Example: light grey/blue */
+    color: #4a4a4a; /* Dark grey text for readability */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* --- Header --- */
+.landing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px; /* More padding */
+    background-color: #ffffff; /* White header background */
+    border-bottom: 1px solid #e5e5e5; /* Subtle border */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.landing-header .brand-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.landing-header .brand-logo i {
+    font-size: 1.8rem;
+    color: #58a700; /* LinguaLearn green */
+}
+
+.landing-header .brand-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #4a4a4a;
+}
+
+/* Style the LOGIN button using Bootstrap classes primarily, but add overrides if needed */
+.landing-header .login-btn {
+    font-weight: bold;
+    border-width: 2px; /* Make outline slightly thicker */
+}
+
+/* --- Main Content --- */
+.landing-main {
+    flex-grow: 1; /* Allows main content to fill available space */
+    display: flex;
+    align-items: center; /* Vertically center content */
+    justify-content: center; /* Horizontally center content */
+    padding: 40px 20px;
+    text-align: center;
+}
+
+/* Using Bootstrap's grid for layout */
+.landing-content-inner {
+    max-width: 900px; /* Limit overall width */
+    width: 100%;
+}
+
+/* Globe Image Styling */
+.globe-container img {
+    max-width: 250px; /* Control size */
+    height: auto;
+    margin-bottom: 30px;
+    opacity: 0.9; /* Slightly transparent */
+}
+
+/* Title */
+.landing-title {
+    font-size: 2.5rem; /* Larger title */
+    font-weight: bold;
+    color: #333; /* Darker text for title */
+    margin-bottom: 30px;
+}
+
+/* Language Options Container */
+.language-options {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 25px; /* Space between cards */
+    margin-bottom: 40px;
+}
+
+/* Language Card Styling */
+.language-card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 25px 20px;
+    width: 160px; /* Fixed width */
+    text-align: center;
+    cursor: default; /* Change if they become clickable links */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+}
+
+.language-card:hover {
+    transform: translateY(-5px); /* Lift effect on hover */
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+}
+
+.language-card img {
+    width: 70px; /* Adjust flag size */
+    height: auto;
+    margin-bottom: 15px;
+    border-radius: 5px; /* Optional: slight rounding */
+}
+
+.language-card p {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #555;
+    margin: 0;
+}
+
+/* Get Started Button Styling */
+.get-started-btn { /* Target the button specifically */
+    font-size: 1.2rem;
+    padding: 12px 40px;
+    font-weight: bold;
+    text-transform: uppercase; /* Optional: make text uppercase */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.get-started-btn:hover {
+    transform: translateY(-2px); /* Slight lift on hover */
+}
+
+/* Responsive Adjustments (Example) */
+@media (max-width: 768px) {
+    .landing-title {
+        font-size: 2rem;
+    }
+    .language-card {
+        width: 140px;
+        padding: 20px 15px;
+    }
+    .language-card img {
+        width: 60px;
+    }
+    .globe-container img {
+        max-width: 200px;
+    }
+}
+
+@media (max-width: 576px) {
+     .landing-header {
+        padding: 10px 15px;
+     }
+     .landing-header .brand-name {
+         font-size: 1.2rem;
+     }
+     .landing-header .brand-logo i {
+         font-size: 1.5rem;
+     }
+     .landing-header .login-btn {
+        padding: 6px 10px;
+        font-size: 0.9rem;
+     }
+    .landing-title {
+        font-size: 1.8rem;
+    }
+    .language-options {
+        gap: 15px;
+    }
+    .language-card {
+        width: calc(50% - 10px); /* Two cards per row */
+        padding: 15px 10px;
+    }
+     .get-started-btn {
+        font-size: 1rem;
+        padding: 10px 30px;
+     }
+}
