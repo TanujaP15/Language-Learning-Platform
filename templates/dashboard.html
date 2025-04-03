@@ -41,10 +41,10 @@
                     <span class="gems-count">{{ gems }}</span>
                 </div>
                 
-                <button class="leaderboard-btn">
+                <a href="{{ url_for('leaderboard') }}" class="leaderboard-btn" title="Leaderboard">
                     <i class="fas fa-trophy"></i>
-                    <span>Leaderboard</span>
-                </button>
+                    <span> Leaderboard</span> {# Keep span for consistency with original button #}
+                </a>
                 
                 <div class="language-selector">
                     <button class="language-btn">

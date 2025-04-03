@@ -1,0 +1,133 @@
+/* static/css/leaderboard.css */
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background-color: #f8f9fa; /* Light background */
+    color: #4a4a4a;
+}
+
+.leaderboard-page-container {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 0; /* Remove padding here, add to header/content */
+    overflow: hidden; /* Ensure rounded corners contain content */
+}
+
+.leaderboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background-color: #f1f3f5; /* Slightly different header background */
+    border-bottom: 1px solid #dee2e6;
+}
+
+.leaderboard-header h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #343a40;
+    text-align: center;
+    flex-grow: 1; /* Allow title to take space */
+}
+
+.leaderboard-header .back-btn {
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.leaderboard-header .placeholder-span {
+    width: 80px; /* Adjust width to roughly match back button width for centering */
+    visibility: hidden;
+}
+
+
+.leaderboard-content {
+    padding: 20px 25px 30px 25px;
+}
+
+.leaderboard-table {
+    border-collapse: separate; /* Needed for border-radius on rows */
+    border-spacing: 0 5px; /* Add vertical space between rows */
+}
+
+.leaderboard-table thead th {
+    border-bottom: 2px solid #dee2e6;
+    color: #6c757d;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.leaderboard-table tbody tr {
+    background-color: #ffffff;
+    transition: background-color 0.15s ease-in-out;
+    border-radius: 8px; /* Rounded rows */
+    overflow: hidden; /* Clip content to rounded corners */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Subtle shadow per row */
+}
+/* Remove Bootstrap hover for manual space */
+.leaderboard-table.table-hover > tbody > tr:hover > * {
+  --bs-table-accent-bg: transparent;
+}
+
+
+.leaderboard-table td {
+    border: none; /* Remove default table borders */
+    padding: 12px 15px; /* Adjust padding */
+    vertical-align: middle;
+}
+
+/* Column specific widths/styles */
+.rank-col {
+    width: 80px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+.user-col {
+    /* Takes remaining space */
+}
+.xp-col {
+    width: 100px;
+    font-size: 1.1rem;
+    color: #58a700; /* Theme green for XP */
+}
+
+/* Profile Icon in table */
+.leaderboard-profile-icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 1rem;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* Current User Highlighting */
+.current-user-row {
+    background-color: #e0f2ff !important; /* Light blue highlight */
+    /* border: 2px solid #7cc5ff; */ /* Optional border */
+    font-weight: bold;
+}
+.current-user-row td:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+.current-user-row td:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+/* Medal/Crown Icons */
+.rank-col i {
+    font-size: 1rem; /* Adjust icon size */
+}

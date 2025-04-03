@@ -124,7 +124,7 @@ body {
     gap: 0.3rem;
 }
 
-.leaderboard-btn {
+/* .leaderboard-btn {
     background: linear-gradient(135deg, var(--accent-color), #ffab00);
     color: white;
     border: none;
@@ -142,7 +142,7 @@ body {
 .leaderboard-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(255, 179, 71, 0.3);
-}
+} */
 
 /* Language Selector */
 .language-selector {
@@ -607,6 +607,38 @@ body {
     .practice-cards {
         grid-template-columns: 1fr;
     }
+}
+
+a.leaderboard-btn { /* Target the <a> tag with the class */
+    background: linear-gradient(135deg, var(--accent-color), #ffab00); /* Example gradient */
+    color: white; /* Text color */
+    border: none; /* Remove default border */
+    padding: 0.6rem 1.2rem; /* Adjust padding as needed */
+    border-radius: 50px; /* Fully rounded ends */
+    font-weight: 600; /* Boldness */
+    display: inline-flex; /* Align icon and text correctly */
+    align-items: center; /* Vertically center icon and text */
+    justify-content: center; /* Center content if needed */
+    gap: 0.5rem; /* Space between icon and text */
+    cursor: pointer;
+    transition: var(--transition); /* Use defined transition */
+    box-shadow: var(--box-shadow); /* Use defined shadow */
+    text-decoration: none; /* Remove underline from link */
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+a.leaderboard-btn:hover,
+a.leaderboard-btn:focus { /* Add focus style for accessibility */
+    transform: translateY(-2px); /* Lift effect */
+    box-shadow: 0 6px 15px rgba(255, 171, 0, 0.3); /* Adjusted shadow color on hover */
+    color: white; /* Ensure text color remains white on hover */
+    text-decoration: none; /* Ensure underline doesn't reappear */
+    outline: none; /* Remove default focus outline if adding custom shadow */
+}
+
+/* Adjust icon size within the button if needed */
+a.leaderboard-btn i {
+    font-size: 1em; /* Or adjust as needed */
 }
 
 @media (max-width: 480px) {

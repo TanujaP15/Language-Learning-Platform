@@ -13,6 +13,7 @@ load_dotenv()
 HEART_REGEN_TIME_SECONDS = 120 # Example: 2 minutes (120 seconds) per heart
 MAX_HEARTS = 5
 XP_LEVELS = [0, 50, 120, 250, 500, 1000, 2000] # XP required to *reach* the next level (level 0 needs 0, level 1 needs 50, etc.)
+LEADERBOARD_LIMIT = 50 # How many users to show on the leaderboard
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "a_default_secret_key_for_dev") # Provide default for dev
@@ -240,73 +241,81 @@ def home():
     return render_template("index.html")
 
 # Signup Route
+# app.py
+
+# ... (other code) ...
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if 'user' in session:
-        return redirect(url_for('dashboard')) # Redirect if already logged in
+        return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
+        # ... (your existing POST logic) ...
         fullname = request.form.get('fullname')
         email = request.form.get('email')
         password = request.form.get('password')
 
         if not fullname or not email or not password:
             flash("All fields are required!", "danger")
-            return render_template("login.html", is_signup=True) # Show signup form again
+            # --- Pass is_signup=True when re-rendering ---
+            return render_template("login.html", is_signup=True)
 
         hashed_password = generate_password_hash(password)
-        today_iso = date.today().isoformat() # Get today's date for defaults
+        today_iso = date.today().isoformat()
 
         try:
             conn = get_db_connection()
-            # Set initial streak/daily dates to today prevent immediate reset/streak loss on first login day
             conn.execute(
                 "INSERT INTO users (fullname, email, password, last_streak_update, last_daily_reset) VALUES (?, ?, ?, ?, ?)",
                 (fullname, email, hashed_password, today_iso, today_iso)
             )
             conn.commit()
             conn.close()
-
             session['user'] = email
             flash("Account created successfully! Welcome! 🎉", "success")
             return redirect(url_for('dashboard'))
-
         except sqlite3.IntegrityError:
             flash("Email already exists. Please log in.", "warning")
+            # --- Redirect to login, don't need is_signup=True here ---
             return redirect(url_for('login'))
         except Exception as e:
              flash(f"An error occurred: {e}", "danger")
+             # --- Pass is_signup=True when re-rendering ---
              return render_template("login.html", is_signup=True)
 
+    # --- Handle GET request for /signup ---
     return render_template("login.html", is_signup=True) # Pass flag to show signup form
 
-# Login Route
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user' in session:
-        return redirect(url_for('dashboard')) # Redirect if already logged in
+        return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
+        # ... (your existing POST logic) ...
         email = request.form.get('email')
         password = request.form.get('password')
 
         if not email or not password:
              flash("Email and password are required.", "danger")
-             return render_template("login.html")
+             # --- Pass is_signup=False when re-rendering ---
+             return render_template("login.html", is_signup=False)
 
         user = get_user_data(email)
 
         if user and check_password_hash(user["password"], password):
             session['user'] = user["email"]
-            # Check daily reset/streak *after* successful login
             check_daily_reset_and_streak(user["email"])
             flash("Login successful! Welcome back! ✅", "success")
             return redirect(url_for('dashboard'))
         else:
             flash("Invalid email or password. Please try again.", "danger")
-            return render_template("login.html")
+            # --- Pass is_signup=False when re-rendering ---
+            return render_template("login.html", is_signup=False)
 
-    return render_template("login.html")
+    # --- Handle GET request for /login ---
+    return render_template("login.html", is_signup=False) # Pass flag to show login form
 
 @app.route('/logout')
 def logout():
@@ -360,115 +369,134 @@ def lose_heart_api(): # Renamed
     return jsonify({"hearts": new_hearts, "time_left": time_left}) # Return time_left too
 
 @app.route('/complete_lesson/<int:lesson_id>', methods=['POST'])
-def complete_lesson_api(lesson_id): # Renamed
+def complete_lesson_api(lesson_id):
     if "user" not in session:
         return jsonify({"error": "User not logged in"}), 401
 
     user_email = session["user"]
-    lang = request.args.get("lang", "Spanish") # Get language from query param
+    lang = request.args.get("lang", "Spanish")
 
-    # Validate Language
     lang_key = f"{lang}-English"
     if lang_key not in lessons_data:
          return jsonify({"error": f"Invalid language specified: {lang}"}), 400
 
-    # Find lesson XP
     lesson_info = next((l for l in lessons_data[lang_key] if l.get("lesson") == lesson_id), None)
     if not lesson_info:
          return jsonify({"error": "Lesson details not found"}), 404
 
-    lesson_xp = lesson_info.get("xp", 10) # Default XP if not specified
+    lesson_xp = lesson_info.get("xp", 10)
 
     conn = get_db_connection()
-    cursor = conn.cursor() # Use cursor for multiple operations
-
-    # Check if already completed (optional, INSERT OR REPLACE handles it)
-    # cursor.execute("SELECT 1 FROM progress WHERE user_email = ? AND lesson_id = ? AND language = ? AND completed = 1",
-    #                (user_email, lesson_id, lang))
-    # if cursor.fetchone():
-    #     conn.close()
-    #     print(f"User {user_email}: Lesson {lesson_id} ({lang}) already completed.")
-    #     # Fetch current completed list if needed for response consistency
-    #     cursor.execute("SELECT lesson_id FROM progress WHERE user_email = ? AND completed = 1 AND language = ?", (user_email, lang))
-    #     completed_lessons = [row["lesson_id"] for row in cursor.fetchall()]
-    #     return jsonify({"message": "Lesson already completed!", "completed_lessons": completed_lessons})
+    cursor = conn.cursor()
 
     # --- Mark lesson as completed ---
-    cursor.execute("INSERT OR REPLACE INTO progress (user_email, lesson_id, language, completed) VALUES (?, ?, ?, 1)",
-                   (user_email, lesson_id, lang))
-    print(f"User {user_email}: Completed lesson {lesson_id} ({lang}).")
+    try: # Wrap DB operations in try/except
+        cursor.execute("INSERT OR REPLACE INTO progress (user_email, lesson_id, language, completed) VALUES (?, ?, ?, 1)",
+                       (user_email, lesson_id, lang))
+        print(f"User {user_email}: Marked lesson {lesson_id} ({lang}) as completed in progress table.")
+
+        # --- Update User Stats (XP, Daily Progress, Streak) ---
+        user_stats = cursor.execute(
+            "SELECT xp, daily_progress, daily_goal, streak, last_streak_update FROM users WHERE email = ?",
+            (user_email,)
+        ).fetchone()
+
+        if not user_stats:
+             # This shouldn't happen if user is logged in, but good practice
+             print(f"CRITICAL ERROR: User {user_email} not found in users table during lesson completion.")
+             conn.rollback()
+             conn.close()
+             return jsonify({"error": "User data not found during update"}), 500
+
+        # --- START DETAILED STREAK DEBUG ---
+        print(f"--- Streak Check Start (User: {user_email}, Lesson: {lesson_id}, Lang: {lang}) ---")
+        print(f"DB Values Read -> Streak: {user_stats['streak']}, Last Update STR: '{user_stats['last_streak_update']}'") # Added quotes for clarity
+
+        new_xp = user_stats["xp"] + lesson_xp
+        new_daily_progress = user_stats["daily_progress"] + lesson_xp
+        current_streak = user_stats["streak"]
+        # updated_streak = current_streak # Default assumption
+
+        today = date.today()
+        last_streak_update_str = user_stats["last_streak_update"]
+        last_streak_date = None
+        if last_streak_update_str: # Check if the string is not None or empty
+            try:
+                # Attempt to parse the date string
+                last_streak_date = date.fromisoformat(last_streak_update_str)
+            except (ValueError, TypeError) as e: # Catch potential errors during parsing
+                print(f"WARNING: Could not parse last_streak_update date '{last_streak_update_str}' for user {user_email}. Error: {e}")
+                last_streak_date = None # Ensure it's None if parsing fails
+        else:
+             print(f"DB Info -> last_streak_update was NULL or empty.")
 
 
-    # --- Update User Stats (XP, Daily Progress, Streak) ---
-    user_stats = cursor.execute(
-        "SELECT xp, daily_progress, daily_goal, streak, last_streak_update FROM users WHERE email = ?",
-        (user_email,)
-    ).fetchone()
+        print(f"Parsed/Compared -> Today: {today}, Last Update DATE: {last_streak_date}")
 
-    if not user_stats:
-         conn.rollback() # Rollback completion if user not found mid-transaction
+        if last_streak_date == today:
+            # If last update was today BUT current streak is 0, it means this is the FIRST activity today starting the streak.
+            if current_streak == 0:
+                print("Condition: First activity today. Starting streak at 1.")
+                updated_streak = 1
+            else:
+                # Otherwise, already active today, maintain the existing streak.
+                print("Condition: Already active today. Streak maintained.")
+                updated_streak = current_streak
+        elif last_streak_date == (today - timedelta(days=1)):
+            # Active yesterday, INCREMENT streak
+            print("Condition: Last update was yesterday. Incrementing streak.")
+            updated_streak = current_streak + 1
+        else: # Covers None (first time or failed parse) or date < yesterday (missed day/reset)
+            # First activity ever OR missed day(s), RESET streak to 1
+            print(f"Condition: New day (last update: {last_streak_date}) or missed day(s) or first activity. Setting streak to 1.")
+            updated_streak = 1
+
+
+        print(f"Result -> Current Streak: {current_streak}, Calculated New Streak: {updated_streak}")
+
+        # Execute the database update
+        cursor.execute(
+            """UPDATE users
+               SET xp = ?, daily_progress = ?, streak = ?, last_streak_update = ?
+               WHERE email = ?""",
+            (new_xp, new_daily_progress, updated_streak, today.isoformat(), user_email)
+        )
+        print(f"Executing DB Update -> New XP: {new_xp}, New Daily: {new_daily_progress}, New Streak: {updated_streak}, New Last Update: {today.isoformat()}")
+
+        conn.commit()
+        
+        print(f"DB Commit executed successfully.")
+        print("--- Streak Check End ---")
+        # --- END DETAILED STREAK DEBUG ---
+
+
+        # --- Fetch updated completed list for response ---
+        cursor.execute("SELECT lesson_id FROM progress WHERE user_email = ? AND completed = 1 AND language = ?", (user_email, lang))
+        completed_lessons = [row["lesson_id"] for row in cursor.fetchall()]
+
+        conn.close()
+
+        return jsonify({
+            "message": "Lesson completed!",
+            "xp_earned": lesson_xp,
+            "new_total_xp": new_xp,
+            "new_streak": updated_streak,
+            "completed_lessons": completed_lessons
+        })
+
+    except sqlite3.Error as db_err: # Catch potential SQLite errors during the whole process
+         print(f"DATABASE ERROR during lesson completion for {user_email}: {db_err}")
+         # Rollback any partial changes
+         conn.rollback()
          conn.close()
-         return jsonify({"error": "User data not found during update"}), 500
-
-    new_xp = user_stats["xp"] + lesson_xp
-    new_daily_progress = user_stats["daily_progress"] + lesson_xp
-    current_streak = user_stats["streak"]
-    updated_streak = current_streak # Assume no change
-
-    today = date.today()
-    last_streak_update_str = user_stats["last_streak_update"]
-    last_streak_date = None
-    if last_streak_update_str:
-        try:
-            last_streak_date = date.fromisoformat(last_streak_update_str)
-        except ValueError:
-            print(f"Warning: Could not parse last_streak_update date '{last_streak_update_str}' for user {user_email}.")
-
-
-    if last_streak_date == today:
-         # Already active today, streak maintained
-         updated_streak = current_streak
-    elif last_streak_date == (today - timedelta(days=1)):
-         # Continued streak from yesterday
-         updated_streak = current_streak + 1
-         print(f"User {user_email}: Streak continued to {updated_streak} days.")
-    else:
-         # Started a new streak (or first activity ever)
-         updated_streak = 1
-         print(f"User {user_email}: New streak started (or first activity).")
-
-
-    cursor.execute(
-        """UPDATE users
-           SET xp = ?, daily_progress = ?, streak = ?, last_streak_update = ?
-           WHERE email = ?""",
-        (new_xp, new_daily_progress, updated_streak, today.isoformat(), user_email)
-    )
-    print(f"User {user_email}: Stats updated - XP: {new_xp}, Daily: {new_daily_progress}, Streak: {updated_streak}")
-
-
-    # --- Unlock next lesson (Optional: Handled by frontend logic checking completion) ---
-    # next_lesson_id = lesson_id + 1
-    # cursor.execute("INSERT OR IGNORE INTO progress (user_email, lesson_id, language, completed) VALUES (?, ?, ?, 0)",
-    #                (user_email, next_lesson_id, lang))
-
-
-    # --- Commit all changes ---
-    conn.commit()
-
-    # --- Fetch updated completed list for response ---
-    cursor.execute("SELECT lesson_id FROM progress WHERE user_email = ? AND completed = 1 AND language = ?", (user_email, lang))
-    completed_lessons = [row["lesson_id"] for row in cursor.fetchall()]
-
-    conn.close()
-
-    return jsonify({
-        "message": "Lesson completed!",
-        "xp_earned": lesson_xp,
-        "new_total_xp": new_xp,
-        "new_streak": updated_streak,
-        "completed_lessons": completed_lessons # Send updated list back
-    })
+         return jsonify({"error": "Database error during lesson completion."}), 500
+    except Exception as e: # Catch any other unexpected errors
+         print(f"UNEXPECTED ERROR during lesson completion for {user_email}: {e}")
+         # Ensure connection is closed even on unexpected errors
+         if conn:
+             conn.rollback() # Rollback just in case
+             conn.close()
+         return jsonify({"error": "An unexpected error occurred."}), 500
 
 
 # --- Page Routes ---
@@ -583,6 +611,88 @@ def dashboard():
          return redirect(url_for('login'))
 
 # ... (rest of app.py)
+
+@app.route('/leaderboard')
+def leaderboard():
+    if "user" not in session:
+        flash("Please log in to view the leaderboard.", "warning")
+        return redirect(url_for('login'))
+
+    user_email = session['user'] # Get current user's email for highlighting
+
+    try:
+        conn = get_db_connection()
+        # Fetch top users ordered by XP, assign rank
+        # Using RANK() window function for tie handling (requires SQLite 3.25+)
+        query = """
+            SELECT
+                email,
+                fullname,
+                xp,
+                RANK() OVER (ORDER BY xp DESC) as rank
+            FROM users
+            ORDER BY rank ASC, fullname ASC -- Sort by rank, then name for ties
+            LIMIT ?
+        """
+        leaderboard_data = conn.execute(query, (LEADERBOARD_LIMIT,)).fetchall()
+        conn.close()
+
+        # Prepare data for template, adding profile color
+        leaderboard_list = []
+        for user_row in leaderboard_data:
+            user_dict = dict(user_row) # Convert row object to dictionary
+            # Generate profile color based on fullname or email
+            display_name = user_dict['fullname'] or user_dict['email']
+            user_dict['profile_color'] = get_profile_color(display_name)
+            # Get first initial for icon
+            user_dict['initial'] = (display_name[0] if display_name else '?').upper()
+            leaderboard_list.append(user_dict)
+
+        # Optional: Find current user's rank if not in top list (more complex query)
+        # For now, we just highlight if they appear in the top LEADERBOARD_LIMIT
+
+    except sqlite3.OperationalError as e:
+         # Handle cases where RANK() might not be supported (older SQLite)
+         if "window functions are not supported" in str(e).lower() or "no such function: rank" in str(e).lower():
+              print("WARNING: RANK() window function not supported. Falling back to manual ranking (might be slow).")
+              conn = get_db_connection()
+              # Fetch without RANK()
+              query_fallback = """
+                    SELECT email, fullname, xp
+                    FROM users
+                    ORDER BY xp DESC, fullname ASC
+                    LIMIT ?
+              """
+              leaderboard_data = conn.execute(query_fallback, (LEADERBOARD_LIMIT,)).fetchall()
+              conn.close()
+              # Manually add rank and color
+              leaderboard_list = []
+              rank_counter = 1
+              for user_row in leaderboard_data:
+                   user_dict = dict(user_row)
+                   user_dict['rank'] = rank_counter # Simple rank, doesn't handle ties like RANK()
+                   display_name = user_dict['fullname'] or user_dict['email']
+                   user_dict['profile_color'] = get_profile_color(display_name)
+                   user_dict['initial'] = (display_name[0] if display_name else '?').upper()
+                   leaderboard_list.append(user_dict)
+                   rank_counter += 1
+         else:
+              # Re-raise other operational errors
+              print(f"ERROR fetching leaderboard data: {e}")
+              flash("Could not load the leaderboard due to a database error.", "danger")
+              return redirect(url_for('dashboard')) # Redirect on error
+
+    except Exception as e:
+        print(f"ERROR fetching leaderboard data: {e}")
+        flash("An error occurred while loading the leaderboard.", "danger")
+        return redirect(url_for('dashboard')) # Redirect on error
+
+
+    return render_template(
+        "leaderboard.html",
+        leaderboard_data=leaderboard_list,
+        current_user_email=user_email # Pass current user's email for highlighting
+    )
 
 
 @app.route('/lesson/<int:lesson_id>')

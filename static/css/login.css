@@ -1,0 +1,132 @@
+/* static/css/login.css */
+
+body {
+    font-family: 'Nunito', sans-serif; /* Match theme font */
+    background-color: #eef2f7; /* Light background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px; /* Add padding for smaller screens */
+    margin: 0;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 420px; /* Slightly wider */
+    text-align: center;
+}
+
+.login-box {
+    background: white;
+    padding: 30px 35px; /* More padding */
+    border-radius: 15px; /* More rounded corners */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    border: 1px solid #e0e0e0; /* Subtle border */
+}
+
+/* Optional: Add Logo/Brand */
+.login-header {
+    margin-bottom: 25px;
+}
+.login-header .brand-logo i {
+    font-size: 2.5rem;
+    color: #58a700; /* Theme green */
+    margin-bottom: 5px;
+}
+.login-header .brand-name {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #4a4a4a;
+}
+
+#form-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 25px;
+}
+
+/* Flash Messages Styling */
+.alert {
+    font-size: 0.95rem;
+    padding: 0.8rem 1rem;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+/* Input Fields */
+.input-group {
+    margin-bottom: 15px; /* Consistent spacing */
+}
+
+/* Ensure input group button aligns nicely */
+.input-group .form-control {
+    height: calc(1.5em + 0.75rem + 5px); /* Match button height better */
+    font-size: 1rem;
+}
+.input-group .btn {
+    height: calc(1.5em + 0.75rem + 5px);
+    border-left: none; /* Remove left border on button */
+    border-color: #ced4da; /* Match input border */
+    display: flex;
+    align-items: center;
+}
+.input-group .form-control:focus {
+     border-color: #86b7fe; /* Bootstrap focus color */
+     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+     z-index: 3; /* Ensure focus border is on top */
+}
+.input-group > .form-control:focus + .btn {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    z-index: 3;
+}
+
+
+/* Buttons */
+.btn {
+    padding: 0.6rem 1rem; /* Adjust padding */
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px; /* Consistent rounding */
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-primary { /* Login Button */
+    background-color: #58a700; /* Theme green */
+    border-color: #58a700;
+}
+.btn-primary:hover {
+    background-color: #4a8e00;
+    border-color: #4a8e00;
+}
+
+.btn-success { /* Sign Up Button */
+    background-color: #1a73e8; /* Google blue or similar */
+    border-color: #1a73e8;
+}
+.btn-success:hover {
+    background-color: #1662c1;
+    border-color: #1662c1;
+}
+
+/* Toggle Text */
+.toggle-text {
+    font-size: 0.95rem;
+    color: #555;
+}
+.toggle-text a {
+    color: #1a73e8; /* Match signup button */
+    text-decoration: none;
+    font-weight: bold;
+}
+.toggle-text a:hover {
+    text-decoration: underline;
+}
+
+/* Remove Signup Text Area */
+.signup-text { /* Ensure it's hidden if accidentally left in HTML */
+    display: none;
+}

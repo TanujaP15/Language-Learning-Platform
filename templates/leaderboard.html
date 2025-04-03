@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard | LinguaLearn</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Optional) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Custom Leaderboard CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/leaderboard.css') }}">
+</head>
+<body>
+    <div class="leaderboard-page-container">
+        <header class="leaderboard-header">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary back-btn">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+            <h1><i class="fas fa-trophy text-warning me-2"></i>Leaderboard</h1>
+            <span class="placeholder-span"></span> <!-- To help center title with flexbox -->
+        </header>
+
+        <main class="leaderboard-content">
+            {% if leaderboard_data %}
+                <div class="table-responsive"> <!-- Make table scrollable on small screens -->
+                    <table class="table table-hover leaderboard-table align-middle">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="rank-col">Rank</th>
+                                <th scope="col" class="user-col">User</th>
+                                <th scope="col" class="xp-col text-end">XP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user_entry in leaderboard_data %}
+                            <tr class="{{ 'current-user-row' if user_entry.email == current_user_email else '' }}">
+                                <td class="rank-col fw-bold">
+                                    {% if user_entry.rank == 1 %}
+                                        <i class="fas fa-crown text-warning me-1"></i>
+                                    {% elif user_entry.rank == 2 %}
+                                        <i class="fas fa-medal text-secondary me-1"></i>
+                                    {% elif user_entry.rank == 3 %}
+                                        <i class="fas fa-medal" style="color: #cd7f32;" me-1></i> <!-- Bronze -->
+                                    {% endif %}
+                                    {{ user_entry.rank }}
+                                </td>
+                                <td class="user-col">
+                                    <div class="d-flex align-items-center">
+                                        <div class="leaderboard-profile-icon me-2" style="background-color: {{ user_entry.profile_color }};">
+                                            {{ user_entry.initial }}
+                                        </div>
+                                        <span>{{ user_entry.fullname or user_entry.email.split('@')[0] }}</span> {# Display name or username part of email #}
+                                    </div>
+                                </td>
+                                <td class="xp-col text-end fw-bold">{{ user_entry.xp }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center" role="alert">
+                    The leaderboard is currently empty. Start learning to climb the ranks!
+                </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <!-- Bootstrap JS Bundle (Optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

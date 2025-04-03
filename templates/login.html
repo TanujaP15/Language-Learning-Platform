@@ -3,111 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <!-- Set title based on whether signup form should show initially -->
+    <title>{{ 'Sign Up' if is_signup else 'Log In' }} | LinguaLearn</title>
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <style>
-        /* General Styles */
-        body {
-            font-family: 'Arial', sans-serif;
-            background: #f8f9fc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        /* Center the Login Box */
-        .login-container {
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .login-box {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            transition: 0.3s;
-        }
-
-        /* Input Fields */
-        .input-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            position: relative;
-        }
-
-        .input-group input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px 0px 0px 5px;
-            font-size: 14px;
-        }
-
-        .input-group .toggle-password {
-            border-radius: 0px 5px 5px 0px;
-            border: 1px solid #ccc;
-        }
-
-        /* Login & Sign Up Button */
-        .btn-primary {
-            background-color: #58CC02;
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background-color: #45a002;
-        }
-
-        /* Toggle Between Login and Sign Up */
-        .toggle-text {
-            font-size: 14px;
-        }
-
-        .toggle-text a {
-            color: #007bff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .toggle-text a:hover {
-            text-decoration: underline;
-        }
-
-        /* Terms & Policy */
-        .signup-text {
-            font-size: 12px;
-            margin-top: 10px;
-            color: #666;
-        }
-
-    </style>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Optional) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Link to your new login page specific CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 <body>
 
     <div class="login-container">
         <div class="login-box">
-            <h2 id="form-title">Log In</h2>
-            
-            {% if error %}
-                <p class="error">{{ error }}</p>
-            {% endif %}
-            
+
+            <!-- Optional: Logo/Brand -->
+            <div class="login-header">
+                <div class="brand-logo"><i class="fas fa-language"></i></div>
+                <div class="brand-name">LinguaLearn</div>
+            </div>
+
+            <h2 id="form-title">{{ 'Sign Up' if is_signup else 'Log In' }}</h2>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category or 'info' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <!-- End Flash Messages -->
+
             <!-- Login Form -->
-            <form id="login-form" action="{{ url_for('login') }}" method="POST">
-                <div class="input-group">
-                    <input type="text" name="email" placeholder="Email or Username" class="form-control" required>
+            <form id="login-form" action="{{ url_for('login') }}" method="POST" style="{{ 'display: none;' if is_signup else '' }}">
+                <div class="input-group mb-3">
+                    <input type="email" name="email" placeholder="Email" class="form-control" required autocomplete="email">
+                    <!-- Removed username option for simplicity, add back if needed -->
                 </div>
-                
-                <div class="input-group">
-                    <input type="password" name="password" id="login-password" placeholder="Password" class="form-control" required>
-                    <button type="button" class="btn btn-outline-secondary toggle-password" onclick="togglePassword('login-password')">
+
+                <div class="input-group mb-3">
+                    <input type="password" name="password" id="login-password" placeholder="Password" class="form-control" required autocomplete="current-password">
+                    <button type="button" class="btn btn-outline-secondary toggle-password" onclick="togglePassword('login-password')" aria-label="Show password">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
@@ -115,19 +59,19 @@
                 <button type="submit" class="btn btn-primary w-100 mt-3">LOG IN</button>
             </form>
 
-            <!-- Sign Up Form (Initially Hidden) -->
-            <form id="signup-form" action="{{ url_for('signup') }}" method="POST" style="display: none;">
-                <div class="input-group">
-                    <input type="text" name="fullname" placeholder="Full Name" class="form-control" required>
-                </div>
-                
-                <div class="input-group">
-                    <input type="email" name="email" placeholder="Email" class="form-control" required>
+            <!-- Sign Up Form -->
+            <form id="signup-form" action="{{ url_for('signup') }}" method="POST" style="{{ '' if is_signup else 'display: none;' }}">
+                <div class="input-group mb-3">
+                    <input type="text" name="fullname" placeholder="Full Name" class="form-control" required autocomplete="name">
                 </div>
 
-                <div class="input-group">
-                    <input type="password" name="password" id="signup-password" placeholder="Password" class="form-control" required>
-                    <button type="button" class="btn btn-outline-secondary toggle-password" onclick="togglePassword('signup-password')">
+                <div class="input-group mb-3">
+                    <input type="email" name="email" placeholder="Email" class="form-control" required autocomplete="email">
+                </div>
+
+                <div class="input-group mb-3">
+                    <input type="password" name="password" id="signup-password" placeholder="Password" class="form-control" required autocomplete="new-password">
+                    <button type="button" class="btn btn-outline-secondary toggle-password" onclick="togglePassword('signup-password')" aria-label="Show password">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
@@ -135,17 +79,18 @@
                 <button type="submit" class="btn btn-success w-100 mt-3">SIGN UP</button>
             </form>
 
-            <p class="toggle-text mt-3">
-                <span id="toggle-message">Don't have an account?</span>
-                <a href="#" id="toggle-link" onclick="toggleForm()">Sign Up</a>
+            <p class="toggle-text mt-4">
+                <span id="toggle-message">{{ "Already have an account?" if is_signup else "Don't have an account?" }}</span>
+                <a href="#" id="toggle-link" onclick="toggleForm(); return false;">{{ "Log In" if is_signup else "Sign Up" }}</a>
+                <!-- Added return false; to prevent page jump -->
             </p>
 
-            <p class="signup-text">
-                By continuing, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
-            </p>
+            <!-- Removed Terms & Policy paragraph -->
+
         </div>
     </div>
 
+    <!-- Inline JS for toggling - okay for simple functionality -->
     <script>
         function toggleForm() {
             const loginForm = document.getElementById("login-form");
@@ -154,35 +99,61 @@
             const toggleMessage = document.getElementById("toggle-message");
             const toggleLink = document.getElementById("toggle-link");
 
+            // Check visibility of login form to decide which state we are in
             if (loginForm.style.display === "none") {
+                // Currently showing signup, switch to login
                 loginForm.style.display = "block";
                 signupForm.style.display = "none";
                 formTitle.innerText = "Log In";
                 toggleMessage.innerText = "Don't have an account?";
                 toggleLink.innerText = "Sign Up";
+                // Update URL without reloading (optional, good UX)
+                history.pushState(null, '', "{{ url_for('login') }}"); // Change URL to /login
             } else {
+                // Currently showing login, switch to signup
                 loginForm.style.display = "none";
                 signupForm.style.display = "block";
                 formTitle.innerText = "Sign Up";
                 toggleMessage.innerText = "Already have an account?";
                 toggleLink.innerText = "Log In";
+                 // Update URL without reloading (optional, good UX)
+                history.pushState(null, '', "{{ url_for('signup') }}"); // Change URL to /signup
             }
         }
 
         function togglePassword(id) {
             let input = document.getElementById(id);
-            let icon = input.nextElementSibling.querySelector("i");
+            // Find the button sibling more reliably
+            let button = input.closest('.input-group').querySelector(".toggle-password");
+            if (!button) return; // Exit if button not found
+            let icon = button.querySelector("i");
+            if (!input || !icon) return; // Exit if elements not found
 
             if (input.type === "password") {
                 input.type = "text";
                 icon.classList.replace("fa-eye", "fa-eye-slash");
+                button.setAttribute("aria-label", "Hide password");
             } else {
                 input.type = "password";
                 icon.classList.replace("fa-eye-slash", "fa-eye");
+                button.setAttribute("aria-label", "Show password");
             }
         }
+
+        // Ensure the correct form is shown on initial load based on Jinja variable
+        // (The inline style in the form tags handles this now)
+        // window.onload = () => {
+        //     const isSignup = {{ 'true' if is_signup else 'false' }};
+        //     if (isSignup) {
+        //         // Ensure signup is visible if is_signup is true
+        //         if (document.getElementById('login-form').style.display !== 'none') {
+        //             toggleForm(); // Call toggle if login is accidentally visible
+        //         }
+        //     }
+        // };
     </script>
 
+    <!-- Bootstrap JS Bundle (Needed for flash message dismissal) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
