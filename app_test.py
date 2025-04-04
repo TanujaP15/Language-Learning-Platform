@@ -13,7 +13,7 @@ load_dotenv()
 HEART_REGEN_TIME_SECONDS = 120 # Example: 2 minutes (120 seconds) per heart
 MAX_HEARTS = 5
 XP_LEVELS = [0, 50, 120, 250, 500, 1000, 2000] # XP required to *reach* the next level (level 0 needs 0, level 1 needs 50, etc.)
-LEADERBOARD_LIMIT = 50 # How many users to show on the leaderboard
+LEADERBOARD_LIMIT = 30 # How many users to show on the leaderboard
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "a_default_secret_key_for_dev") # Provide default for dev
@@ -464,7 +464,7 @@ def complete_lesson_api(lesson_id):
         print(f"Executing DB Update -> New XP: {new_xp}, New Daily: {new_daily_progress}, New Streak: {updated_streak}, New Last Update: {today.isoformat()}")
 
         conn.commit()
-        
+
         print(f"DB Commit executed successfully.")
         print("--- Streak Check End ---")
         # --- END DETAILED STREAK DEBUG ---
