@@ -12,158 +12,164 @@ document.addEventListener('DOMContentLoaded', () => {
     const lessonTitleDisplay = document.getElementById('lesson-title-display');
 
     // --- State Variables ---
+    let originalQuestions = []; // Store the initial list loaded from lessonData
+    let questionsToAsk = [];    // The current pool of questions (initial or review)
     let currentQuestionIndex = 0;
-    let questions = [];
     let currentHearts = 0;
     let lessonId = null;
     let language = '';
-    let mistakeMadeOnCurrent = false;
+    let mistakeMadeOnCurrent = false; // Prevents losing multiple hearts on same question instance
+
+    // --- State for Review Mode ---
+    let incorrectlyAnsweredIndices = new Set(); // Store *original* indices of wrong answers in the current pass
+    let inReviewMode = false;                // Flag for review rounds
+    let reviewRoundCount = 0;                // Counter for review rounds (optional)
 
     // --- State for Matching Questions ---
     let matchCol1Selected = null; // Reference to the selected DOM element in column 1
-    let matchCol2Selected = null; // Reference to the selected DOM element in column 2
-    let userMatchedPairs = {};    // Stores user's confirmed matches {col1Value: col2Value}
-    let itemsToMatch = 0;         // Total number of pairs for the current question
+    let userMatchedPairs = {};    // Stores user's confirmed matches {col1Value: col2Value} for the current question
+    let itemsToMatchCount = 0;    // Total number of pairs for the current matching question
 
     // --- Initialization ---
     function initLesson() {
-        // ... (keep existing init logic for loading data, language, hearts) ...
+        // Load essential data from global variables set in lesson.html
         if (typeof lessonData !== 'undefined' && lessonData && lessonData.questions) {
-            questions = lessonData.questions;
+            originalQuestions = lessonData.questions.map((q, index) => ({ ...q, originalIndex: index })); // Add original index
+            questionsToAsk = [...originalQuestions]; // Start with all questions
             lessonId = lessonData.lesson;
-            lessonTitleDisplay.textContent = lessonData.title; // Set title
+            lessonTitleDisplay.textContent = lessonData.title;
         } else {
             console.error("Lesson data not found or invalid.");
             showError("Could not load lesson questions.");
-            checkButton.disabled = true;
-            return;
+            return; // Stop initialization
         }
 
-        if (typeof currentLanguage !== 'undefined') {
-            language = currentLanguage;
-        } else {
-            console.warn("Language not defined.");
-            language = 'Spanish'; // Default fallback
-        }
-
-        if (typeof initialHearts !== 'undefined') {
-            currentHearts = initialHearts;
-        } else {
-            console.warn("Initial hearts not defined.");
-            currentHearts = 0; // Default fallback
-        }
+        language = (typeof currentLanguage !== 'undefined') ? currentLanguage : 'Spanish'; // Default language
+        currentHearts = (typeof initialHearts !== 'undefined') ? initialHearts : 0; // Default hearts
 
         updateHeartsDisplay();
+
+        // Check if user can start the lesson
         if (currentHearts <= 0) {
-             showError("You have no hearts left to continue!", false);
-             checkButton.disabled = true;
+            showError("You have no hearts left to start!", false); // Non-fatal error message
+            // Disable interaction buttons if no hearts
+            if(checkButton) checkButton.disabled = true;
+            if(continueButton) continueButton.style.display = 'none';
+            return; // Don't display first question if no hearts
         }
 
-        if (questions.length > 0) {
-            displayQuestion();
+        if (questionsToAsk.length > 0) {
+            displayQuestion(); // Display the first question
         } else {
-            console.error("No questions found for this lesson.");
             showError("No questions available in this lesson.");
-            checkButton.disabled = true;
         }
 
-        // Event Listeners (keep existing)
-        checkButton.addEventListener('click', handleCheckAnswer);
-        continueButton.addEventListener('click', handleContinue);
+        // Attach event listeners
+        if(checkButton) checkButton.addEventListener('click', handleCheckAnswer);
+        if(continueButton) continueButton.addEventListener('click', handleContinue);
+        // Enter key listener for text inputs
         answerInputArea.addEventListener('keypress', function(e) {
-           if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type === 'text' && !checkButton.disabled) {
-                handleCheckAnswer();
-           }
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type === 'text') {
+                if (!checkButton.disabled && checkButton.style.display !== 'none') {
+                    handleCheckAnswer();
+                }
+            }
         });
     }
 
     // --- Display Logic ---
     function displayQuestion() {
-        if (currentQuestionIndex >= questions.length) return;
+        if (currentQuestionIndex >= questionsToAsk.length) {
+            console.warn("DisplayQuestion called beyond current pool bounds.");
+            handleEndOfPool(); // Trigger end-of-pool logic if this happens unexpectedly
+            return;
+        }
 
-        const question = questions[currentQuestionIndex];
-        mistakeMadeOnCurrent = false;
+        const question = questionsToAsk[currentQuestionIndex];
+        mistakeMadeOnCurrent = false; // Reset for new question instance
 
-        // Reset matching state
+        // Reset state for new question display
+        resetUIForNewQuestion();
+
+        // Reset matching-specific state
         matchCol1Selected = null;
-        matchCol2Selected = null;
         userMatchedPairs = {};
-        itemsToMatch = 0;
-
-        // Clear previous state
-        answerInputArea.innerHTML = '';
-        feedbackArea.innerHTML = '';
-        feedbackArea.className = 'feedback';
-        feedbackArea.classList.remove('visible');
-        checkButton.disabled = true; // Disable check initially for most types
-        continueButton.style.display = 'none';
+        itemsToMatchCount = 0;
 
         // Set question text and instruction
-        questionInstruction.textContent = question.instruction || getInstruction(question.type); // Use provided instruction or default
-        questionText.textContent = question.question || '';
+        questionInstruction.textContent = getInstruction(question.type, inReviewMode);
+        questionText.textContent = question.question || ''; // Display main text if available
 
+        // Create input area based on type
         switch (question.type) {
             case 'translation':
             case 'sentence_transformation':
                 createTextInput();
-                checkButton.disabled = false; // Enable check for text input
                 break;
             case 'multiple_choice':
                 createMultipleChoice(question.options);
-                // Enable check button only when an option is selected
-                answerInputArea.addEventListener('change', () => {
-                     checkButton.disabled = !document.querySelector('input[name="mc-answer"]:checked');
-                }, { once: true }); // Optimization: check only once needed per question
                 break;
             case 'fill_in_blank':
+                 // FIB modifies questionText, ensure it's cleared before call if needed
+                 questionText.textContent = ''; // Clear question text before creating FIB
                 createFillInBlank(question.question);
-                // Enable check button - user needs to type something
-                const fibInput = questionText.querySelector('input');
-                if(fibInput) {
-                    fibInput.addEventListener('input', () => {
-                        checkButton.disabled = fibInput.value.trim() === '';
-                    });
-                    checkButton.disabled = true; // Initially disabled
-                } else {
-                     checkButton.disabled = true; // Should not happen
-                }
                 break;
             case 'matching':
-                itemsToMatch = Object.keys(question.pairs).length;
-                createMatchingUI(question.pairs);
-                // Check button remains disabled until all pairs are selected by the user
+                itemsToMatchCount = Object.keys(question.pairs || {}).length; // Get count safely
+                createMatchingUI(question.pairs || {}); // Pass empty object if pairs missing
                 break;
             default:
-                questionInstruction.textContent = 'Question:'
+                questionInstruction.textContent = 'Error:';
                 questionText.textContent = `Unsupported question type: ${question.type}`;
-                checkButton.disabled = true;
+                // Disable interaction if type is unknown
+                if(checkButton) checkButton.disabled = true;
         }
 
-        const firstInput = answerInputArea.querySelector('input:not([type=radio])');
+        // Focus appropriate input element
+        focusFirstInput();
+
+        updateProgress(); // Update progress bar
+    }
+
+    // --- Helper to reset UI elements before displaying next question ---
+    function resetUIForNewQuestion() {
+        if(answerInputArea) answerInputArea.innerHTML = ''; // Clear previous inputs/options
+        if(feedbackArea) {
+            feedbackArea.innerHTML = '';
+            feedbackArea.className = 'feedback'; // Reset feedback classes
+            feedbackArea.classList.remove('visible');
+        }
+        if(checkButton) {
+            checkButton.disabled = true; // Usually disable initially, enable on input/selection
+            checkButton.style.display = 'block'; // Show check button
+        }
+        if(continueButton) continueButton.style.display = 'none'; // Hide continue button
+    }
+
+    // --- Helper to focus the first available input ---
+    function focusFirstInput() {
+        // Prioritize inputs not of type radio, then check inside questionText (for FIB)
+        const firstInput = answerInputArea.querySelector('input:not([type="radio"])') ||
+                           (questionText && questionText.querySelector('input'));
         if (firstInput) {
             firstInput.focus();
         }
-
-        updateProgress();
     }
 
     // --- Get Default Instruction Text ---
-    function getInstruction(type) {
+    function getInstruction(type, isReview = false) {
+         const prefix = isReview ? 'Review: ' : '';
          switch (type) {
-            case 'translation': return 'Translate this word/phrase:';
-            case 'multiple_choice': return 'Select the correct option:';
-            case 'fill_in_blank': return 'Fill in the blank:';
-            case 'matching': return 'Match the pairs:';
-            case 'sentence_transformation': return 'Translate this sentence:';
+            case 'translation': return prefix + 'Translate this word/phrase:';
+            case 'multiple_choice': return prefix + 'Select the correct option:';
+            case 'fill_in_blank': return prefix + 'Fill in the blank:';
+            case 'matching': return prefix + 'Match the pairs:';
+            case 'sentence_transformation': return prefix + 'Translate this sentence:';
             default: return 'Question:';
          }
     }
 
-
     // --- Input Creation Functions ---
-    // createTextInput, createFillInBlank, createMultipleChoice remain mostly the same...
-    // Ensure createFillInBlank correctly places input within questionText
-
     function createTextInput(placeholder = "Type your answer here") {
         const input = document.createElement('input');
         input.type = 'text';
@@ -171,51 +177,55 @@ document.addEventListener('DOMContentLoaded', () => {
         input.placeholder = placeholder;
         input.autocomplete = 'off';
         input.autocapitalize = 'none';
-        input.classList.add('form-control', 'form-control-lg'); // Add bootstrap classes if desired
+        input.classList.add('form-control', 'form-control-lg');
         answerInputArea.appendChild(input);
         // Enable check button when user types something
         input.addEventListener('input', () => {
-            checkButton.disabled = input.value.trim() === '';
+            if(checkButton) checkButton.disabled = input.value.trim() === '';
         });
-        checkButton.disabled = true; // Initially disabled
+        if(checkButton) checkButton.disabled = true; // Initially disabled
     }
 
     function createFillInBlank(questionString) {
         const parts = questionString.split('____');
-        questionText.innerHTML = ''; // Clear text area
-        let inputField; // Reference to the input
+        // questionText is already cleared by resetUIForNewQuestion or displayQuestion
+        let inputField = null;
 
         parts.forEach((part, index) => {
             questionText.appendChild(document.createTextNode(part));
             if (index < parts.length - 1) {
                 inputField = document.createElement('input');
                 inputField.type = 'text';
-                inputField.id = 'text-answer'; // Single input ID
+                inputField.id = 'text-answer'; // Use consistent ID
                 inputField.classList.add('fill-blank-input');
                 inputField.maxLength = 25;
                 inputField.autocomplete = 'off';
                 inputField.autocapitalize = 'none';
+                inputField.style.width = '120px'; // Example styling
                 questionText.appendChild(inputField);
             }
         });
 
-        answerInputArea.innerHTML = ''; // No separate input needed
+        answerInputArea.innerHTML = ''; // No separate input area needed
 
-        if (inputField) {
-            inputField.focus();
-             // Enable check button when user types something
+        if (inputField && checkButton) {
              inputField.addEventListener('input', () => {
                  checkButton.disabled = inputField.value.trim() === '';
              });
              checkButton.disabled = true; // Initially disabled
-        } else {
-             checkButton.disabled = true; // Disable if no input somehow
+        } else if (checkButton) {
+             checkButton.disabled = true; // Disable if no input created
         }
     }
 
     function createMultipleChoice(options) {
+        if (!options || options.length === 0) {
+            answerInputArea.textContent = "Error: No options provided.";
+             if(checkButton) checkButton.disabled = true;
+            return;
+        }
         options.forEach((option, index) => {
-            const div = document.createElement('div'); // Use div as container for better styling control
+            const div = document.createElement('div');
             div.classList.add('mc-option');
 
             const radio = document.createElement('input');
@@ -223,205 +233,184 @@ document.addEventListener('DOMContentLoaded', () => {
             radio.name = 'mc-answer';
             radio.value = option;
             radio.id = `option-${index}`;
-            radio.classList.add('form-check-input'); // Optional bootstrap styling
+            radio.classList.add('form-check-input');
 
             const label = document.createElement('label');
             label.htmlFor = `option-${index}`;
-            label.appendChild(document.createTextNode(option)); // Text goes inside label
-            label.classList.add('form-check-label'); // Optional bootstrap styling
+            label.appendChild(document.createTextNode(option));
+            label.classList.add('form-check-label');
 
             div.appendChild(radio);
             div.appendChild(label);
 
-            // Click anywhere on the div selects the radio
             div.addEventListener('click', () => {
-                if (!radio.checked) { // Only trigger if not already checked
-                    radio.checked = true;
-                    // Manually trigger change event for listener
-                    radio.dispatchEvent(new Event('change', { bubbles: true }));
-                }
+                if (!radio.checked) { radio.checked = true; }
+                // Visually update selection
                 document.querySelectorAll('.mc-option').forEach(el => el.classList.remove('selected'));
                 div.classList.add('selected');
+                // Enable check button since an option is now selected
+                if(checkButton) checkButton.disabled = false;
             });
 
             answerInputArea.appendChild(div);
         });
-         // Listen for changes to enable check button
-         answerInputArea.addEventListener('change', (event) => {
-              if (event.target.type === 'radio') {
-                   checkButton.disabled = false;
-              }
-         });
-         checkButton.disabled = true; // Initially disabled
+         if(checkButton) checkButton.disabled = true; // Initially disabled until selection
     }
 
-    // --- NEW: Matching UI Creation ---
     function createMatchingUI(pairs) {
+        if (!pairs || Object.keys(pairs).length === 0) {
+             answerInputArea.textContent = "Error: No matching pairs provided.";
+             if(checkButton) checkButton.disabled = true;
+             return;
+        }
         const keys = Object.keys(pairs);
         const values = Object.values(pairs);
 
-        // Shuffle function (Fisher-Yates)
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
+        // Shuffle function
+        function shuffle(array) { /* ... (same shuffle logic) ... */
+              for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [array[i], array[j]] = [array[j], array[i]];
             }
             return array;
         }
-
-        // Shuffle one or both columns - shuffling values is usually sufficient
-        const shuffledValues = shuffle([...values]); // Create shuffled copy
+        const shuffledValues = shuffle([...values]);
 
         const container = document.createElement('div');
         container.className = 'matching-container';
-
         const col1Div = document.createElement('div');
-        col1Div.className = 'match-column';
-        col1Div.id = 'match-col-1';
-
+        col1Div.className = 'match-column'; col1Div.id = 'match-col-1';
         const col2Div = document.createElement('div');
-        col2Div.className = 'match-column';
-        col2Div.id = 'match-col-2';
+        col2Div.className = 'match-column'; col2Div.id = 'match-col-2';
 
-        // Create items for column 1 (keys)
-        keys.forEach(key => {
-            const item = document.createElement('button'); // Use buttons for better accessibility
-            item.className = 'match-item';
-            item.textContent = key;
-            item.dataset.value = key; // Store original key
-            item.dataset.column = '1';
-            item.addEventListener('click', handleMatchItemClick);
-            col1Div.appendChild(item);
-        });
-
-        // Create items for column 2 (shuffled values)
-        shuffledValues.forEach(value => {
+        // Create items and add listeners
+        const createItem = (text, value, columnId) => {
             const item = document.createElement('button');
-            item.className = 'match-item';
-            item.textContent = value;
-            item.dataset.value = value; // Store original value
-            item.dataset.column = '2';
+            item.className = 'match-item btn'; // Add btn class for basic styling/focus
+            item.textContent = text;
+            item.dataset.value = value;
+            item.dataset.column = columnId;
             item.addEventListener('click', handleMatchItemClick);
-            col2Div.appendChild(item);
-        });
+            return item;
+        };
+
+        keys.forEach(key => col1Div.appendChild(createItem(key, key, '1')));
+        shuffledValues.forEach(value => col2Div.appendChild(createItem(value, value, '2')));
 
         container.appendChild(col1Div);
         container.appendChild(col2Div);
         answerInputArea.appendChild(container);
 
-        checkButton.disabled = true; // Disabled until all pairs are attempted
+        if(checkButton) checkButton.disabled = true; // Disabled until all pairs are matched
     }
 
-    // --- NEW: Matching Click Handler ---
+    // --- Matching Click Handler ---
     function handleMatchItemClick(event) {
         const clickedItem = event.target;
         const column = clickedItem.dataset.column;
+        const value = clickedItem.dataset.value;
 
         if (clickedItem.classList.contains('paired')) {
-            // --- Logic to UNMATCH a pair ---
-            const valueToRemove = clickedItem.dataset.value;
+            // --- Unmatch Logic ---
             let keyToRemove = null;
-            let pairedElementCol1 = null;
-            let pairedElementCol2 = null;
+            let valuePaired = null;
 
-            // Find the pair in userMatchedPairs
-            for (const key in userMatchedPairs) {
-                if (key === valueToRemove || userMatchedPairs[key] === valueToRemove) {
-                    keyToRemove = key;
-                    break;
+            // Find which pair this item belongs to
+            if (column === '1') {
+                keyToRemove = value;
+                valuePaired = userMatchedPairs[keyToRemove];
+            } else { // Clicked in column 2
+                for (const key in userMatchedPairs) {
+                    if (userMatchedPairs[key] === value) {
+                        keyToRemove = key;
+                        valuePaired = value;
+                        break;
+                    }
                 }
             }
 
-            if (keyToRemove) {
-                const valuePaired = userMatchedPairs[keyToRemove];
-                delete userMatchedPairs[keyToRemove]; // Remove from tracked pairs
+            if (keyToRemove !== null && valuePaired !== null) {
+                delete userMatchedPairs[keyToRemove]; // Remove track
 
-                // Find the DOM elements for this pair
-                pairedElementCol1 = answerInputArea.querySelector(`#match-col-1 .match-item[data-value="${keyToRemove}"]`);
-                pairedElementCol2 = answerInputArea.querySelector(`#match-col-2 .match-item[data-value="${valuePaired}"]`);
+                // Find DOM elements
+                const item1 = answerInputArea.querySelector(`#match-col-1 .match-item[data-value="${keyToRemove}"]`);
+                const item2 = answerInputArea.querySelector(`#match-col-2 .match-item[data-value="${valuePaired}"]`);
 
-                // Remove visual pairing styles and re-enable buttons
-                if (pairedElementCol1) {
-                    pairedElementCol1.classList.remove('paired', 'selected');
-                    pairedElementCol1.disabled = false;
-                }
-                if (pairedElementCol2) {
-                    pairedElementCol2.classList.remove('paired', 'selected');
-                    pairedElementCol2.disabled = false;
-                }
-                 console.log("Unmatched:", keyToRemove, valuePaired);
+                // Reset styles and enable
+                if(item1) { item1.classList.remove('paired', 'selected'); item1.disabled = false; }
+                if(item2) { item2.classList.remove('paired', 'selected'); item2.disabled = false; }
+
+                console.log("Unmatched:", keyToRemove, valuePaired);
             }
-            // Reset selections
+            // Reset selections and disable check
+            if(matchCol1Selected) matchCol1Selected.classList.remove('selected');
             matchCol1Selected = null;
-            matchCol2Selected = null;
-            // Always disable check button when unpairing
-            checkButton.disabled = true;
+            if(checkButton) checkButton.disabled = true;
 
         } else if (column === '1') {
-             // If selecting a new item in col 1, deselect any previous one
+            // --- Select in Column 1 ---
             if (matchCol1Selected && matchCol1Selected !== clickedItem) {
-                matchCol1Selected.classList.remove('selected');
+                matchCol1Selected.classList.remove('selected'); // Deselect previous
             }
-             // Toggle selection for the clicked item
-             clickedItem.classList.toggle('selected');
-             matchCol1Selected = clickedItem.classList.contains('selected') ? clickedItem : null;
-             matchCol2Selected = null; // Deselect column 2 when selecting column 1
+            clickedItem.classList.toggle('selected'); // Toggle current
+            matchCol1Selected = clickedItem.classList.contains('selected') ? clickedItem : null;
 
         } else if (column === '2') {
-            // Only allow selecting from column 2 if something is selected in column 1
-            if (matchCol1Selected) {
-                 // This selection completes a pair attempt
+            // --- Select in Column 2 (Attempt Pair) ---
+            if (matchCol1Selected) { // Can only pair if col 1 is selected
                 const col1Value = matchCol1Selected.dataset.value;
-                const col2Value = clickedItem.dataset.value;
+                const col2Value = value; // Value of the clicked col 2 item
 
-                // Store the attempted pair
+                // Store pair
                 userMatchedPairs[col1Value] = col2Value;
                 console.log("Matched Attempt:", userMatchedPairs);
 
-
-                // Visually mark as paired and disable
+                // Update UI: Mark as paired, disable, remove selection highlight
                 matchCol1Selected.classList.add('paired');
-                matchCol1Selected.classList.remove('selected'); // Remove selection highlight
+                matchCol1Selected.classList.remove('selected');
                 matchCol1Selected.disabled = true;
 
                 clickedItem.classList.add('paired');
                 clickedItem.disabled = true;
 
-                // Reset selection
+                // Reset col 1 selection
                 matchCol1Selected = null;
 
-                // Check if all items are now paired
-                if (Object.keys(userMatchedPairs).length === itemsToMatch) {
-                    checkButton.disabled = false; // Enable check button
+                // Enable check button if all items are paired
+                if (Object.keys(userMatchedPairs).length === itemsToMatchCount && checkButton) {
+                    checkButton.disabled = false;
                 }
             } else {
-                 // No active selection in column 1, do nothing or provide feedback
-                 console.log("Select an item from the left column first.");
+                // No selection in column 1 - maybe flash column 1 or give subtle feedback
+                console.log("Select an item from the left column first.");
             }
         }
     }
 
-
-    // --- Event Handlers (handleCheckAnswer needs update) ---
+    // --- Event Handlers ---
     function handleCheckAnswer() {
-        if (currentHearts <= 0) {
+        // Allow checking even with 0 hearts if a mistake was *already* made on this question instance
+        if (currentHearts <= 0 && !mistakeMadeOnCurrent) {
             showFeedback("You are out of hearts!", "incorrect");
             return;
         }
 
-        const question = questions[currentQuestionIndex];
-        let isCorrect = false; // Overall correctness for the question
+        const question = questionsToAsk[currentQuestionIndex];
+        const originalIndex = question.originalIndex; // Get original index stored earlier
+        let isOverallCorrect = false; // Assume incorrect initially
+
+        // Disable check button immediately to prevent double clicks
+        if(checkButton) checkButton.disabled = true;
 
         if (question.type === 'matching') {
             // --- Matching Check Logic ---
             const correctPairs = question.pairs;
-            let correctMatches = 0;
-            isCorrect = true; // Assume correct initially
+            let correctMatchesCount = 0;
+            isOverallCorrect = true; // Assume correct until a mismatch is found
 
-            // Disable all match items during check
+            // Disable further interaction with matching items
             answerInputArea.querySelectorAll('.match-item').forEach(item => item.disabled = true);
 
-            // Check each attempted pair
             for (const key in userMatchedPairs) {
                 const userValue = userMatchedPairs[key];
                 const correctValue = correctPairs[key];
@@ -430,208 +419,273 @@ document.addEventListener('DOMContentLoaded', () => {
                 const item2 = answerInputArea.querySelector(`#match-col-2 .match-item[data-value="${userValue}"]`);
 
                 if (userValue === correctValue) {
-                    correctMatches++;
-                    // Style the correct pair
+                    correctMatchesCount++;
                     if(item1) item1.classList.add('correct-pair');
                     if(item2) item2.classList.add('correct-pair');
                 } else {
-                    isCorrect = false; // One wrong pair makes the whole question wrong for scoring
-                    // Style the incorrect pair
-                     if(item1) item1.classList.add('incorrect-pair');
-                     if(item2) {
-                          item2.classList.add('incorrect-pair');
-                          // Optionally highlight the one they *selected* specifically
-                          item2.classList.add('selected'); // Reuse 'selected' style with incorrect context
-                     }
-                    console.log(`Incorrect Match: ${key} -> ${userValue} (Should be: ${correctValue})`);
+                    isOverallCorrect = false; // Mark overall as incorrect
+                    if(item1) item1.classList.add('incorrect-pair');
+                    if(item2) item2.classList.add('incorrect-pair');
                 }
             }
-
-             // Provide specific feedback for matching
-             if (isCorrect) {
+            // Provide feedback specific to matching
+             if (isOverallCorrect) {
                  showFeedback("All pairs matched correctly!", "correct");
              } else {
-                  showFeedback(`Some pairs were incorrect. (${correctMatches}/${itemsToMatch} correct)`, "incorrect");
-                 // Here you could optionally show the correct pairings more explicitly if needed
+                  showFeedback(`Some pairs incorrect. (${correctMatchesCount}/${itemsToMatchCount} correct)`, "incorrect");
              }
 
         } else {
-            // --- Check Logic for other types (Translation, MC, FIB) ---
+            // --- Check Logic for other types ---
             let userAnswer = getUserAnswer(question.type);
             const correctAnswer = question.answer;
 
-            if (typeof userAnswer === 'string') {
-                userAnswer = userAnswer.trim().toLowerCase();
-            }
-            if (typeof correctAnswer === 'string') {
-                isCorrect = userAnswer === correctAnswer.toLowerCase();
-            } else {
-                isCorrect = userAnswer === correctAnswer;
-            }
-        } // End of check logic branching
+            // Normalize strings for comparison
+            let normalizedUserAnswer = userAnswer;
+            let normalizedCorrectAnswer = correctAnswer;
+            if (typeof userAnswer === 'string') normalizedUserAnswer = userAnswer.trim().toLowerCase();
+            if (typeof correctAnswer === 'string') normalizedCorrectAnswer = correctAnswer.trim().toLowerCase();
 
-        // --- Common Feedback/Action Logic ---
-        if (isCorrect) {
-            if(question.type !== 'matching') showFeedback("Correct!", "correct"); // Avoid duplicate message for matching
-            styleInputFeedback(question.type, true); // Style non-matching inputs
-            checkButton.disabled = true;
-            continueButton.style.display = 'block';
-            continueButton.focus();
+            isOverallCorrect = (normalizedUserAnswer !== null && normalizedUserAnswer === normalizedCorrectAnswer);
+
+             // Provide feedback for non-matching types
+             if (isOverallCorrect) {
+                showFeedback("Correct!", "correct");
+             } else {
+                 showFeedback(`Incorrect. Correct answer: ${correctAnswer}`, "incorrect");
+             }
+              // Style inputs for non-matching types
+              styleInputFeedback(question.type, isOverallCorrect);
+        } // End check logic branching
+
+        // --- Common Actions After Checking ---
+        if (isOverallCorrect) {
+            // If in review mode and answered correctly, remove from the set for the *next* round
+            if (inReviewMode) {
+                incorrectlyAnsweredIndices.delete(originalIndex);
+            }
         } else {
-            if(question.type !== 'matching') {
-                 showFeedback(`Incorrect. Correct: ${question.answer}`, "incorrect");
-            }
-            styleInputFeedback(question.type, false); // Style non-matching inputs
-
+            // If incorrect, add the original index to the set for the review round
+            incorrectlyAnsweredIndices.add(originalIndex);
+            // Deduct heart only if it's the first mistake on this specific question instance
             if (!mistakeMadeOnCurrent) {
                 loseHeart();
                 mistakeMadeOnCurrent = true;
             }
-            checkButton.disabled = true;
-            continueButton.style.display = 'block'; // Allow moving on
         }
+
+        // Hide check, show continue, focus continue
+        if(checkButton) checkButton.style.display = 'none';
+        if(continueButton) {
+             continueButton.style.display = 'block';
+             continueButton.focus();
+        }
+
     } // End handleCheckAnswer
 
     function handleContinue() {
-        currentQuestionIndex++;
-        if (currentQuestionIndex < questions.length) {
-            displayQuestion();
+        currentQuestionIndex++; // Advance index within the current pool
+        if (currentQuestionIndex < questionsToAsk.length) {
+            displayQuestion(); // Display next question in the pool
         } else {
-            completeLesson();
+            handleEndOfPool(); // Reached end of the current pool (initial or review)
         }
     }
 
-    // --- Answer Retrieval (needs update for matching) ---
+    // --- Helper to shuffle arrays ---
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    // --- End of Pool / Review Logic ---
+    function handleEndOfPool() {
+         if (!inReviewMode) {
+             // --- End of Initial Pass ---
+             if (incorrectlyAnsweredIndices.size === 0) {
+                 completeLesson(); // All correct first time!
+             } else {
+                 // --- Start FIRST Review Mode ---
+                 console.log("Starting review mode for indices:", incorrectlyAnsweredIndices);
+                 inReviewMode = true;
+                 reviewRoundCount = 1; // Start counting review rounds
+                 // Create review pool from original questions using incorrect indices
+                 questionsToAsk = Array.from(incorrectlyAnsweredIndices).map(index => originalQuestions[index]);
+                 shuffleArray(questionsToAsk); // Shuffle review questions
+                 incorrectlyAnsweredIndices.clear(); // Clear set to track errors *within this review round*
+                 currentQuestionIndex = 0; // Reset index for the new pool
+                 lessonTitleDisplay.textContent = `${lessonData.title} (Review ${reviewRoundCount})`;
+                 displayQuestion();
+             }
+         } else {
+             // --- End of a Review Pass ---
+             if (incorrectlyAnsweredIndices.size === 0) {
+                 // All questions in *this* review round were correct!
+                 completeLesson();
+             } else {
+                 // --- Start ANOTHER Review Pass ---
+                 reviewRoundCount++;
+                 console.log(`Starting review round ${reviewRoundCount} for indices:`, incorrectlyAnsweredIndices);
+                 // Incorrect indices from the completed round are already in the set.
+                 questionsToAsk = Array.from(incorrectlyAnsweredIndices).map(index => originalQuestions[index]);
+                 shuffleArray(questionsToAsk);
+                 incorrectlyAnsweredIndices.clear(); // Clear set for the *next* round
+                 currentQuestionIndex = 0;
+                 lessonTitleDisplay.textContent = `${lessonData.title} (Review ${reviewRoundCount})`;
+                 displayQuestion();
+             }
+         }
+    }
+
+    // --- Answer Retrieval ---
     function getUserAnswer(type) {
         switch (type) {
             case 'translation':
             case 'sentence_transformation':
-                return document.getElementById('text-answer')?.value || '';
+                const textInput = answerInputArea.querySelector('#text-answer');
+                return textInput ? textInput.value : '';
             case 'fill_in_blank':
-                 const fibInput = questionText.querySelector('input#text-answer');
-                 return fibInput?.value || '';
+                 const fibInput = questionText.querySelector('#text-answer'); // Input is inside questionText
+                 return fibInput ? fibInput.value : '';
             case 'multiple_choice':
-                const selectedRadio = document.querySelector('input[name="mc-answer"]:checked');
+                const selectedRadio = answerInputArea.querySelector('input[name="mc-answer"]:checked');
                 return selectedRadio ? selectedRadio.value : null;
             case 'matching':
-                 return userMatchedPairs; // Return the object of attempted pairs
+                 return userMatchedPairs; // Return the object of user's attempted pairs
             default:
+                console.warn(`Getting answer for unknown type: ${type}`);
                 return null;
         }
     }
 
-    // --- UI Update Functions (needs update for matching) ---
+    // --- UI Update Functions ---
     function updateProgress() {
-        // Progress increases only when moving to the *next* question
-        const progressPercent = (currentQuestionIndex / questions.length) * 100;
-        progressBar.style.width = `${progressPercent}%`;
+        // Progress reflects movement through the *current* pool (initial or review)
+        const progressPercent = questionsToAsk.length > 0 ? (currentQuestionIndex / questionsToAsk.length) * 100 : 0;
+        if(progressBar) progressBar.style.width = `${Math.min(100, progressPercent)}%`;
     }
 
     function updateHeartsDisplay() {
-        // ... (keep existing logic) ...
-         heartsCountSpan.textContent = `x${currentHearts}`;
+        if (!heartsCountSpan) return;
+        heartsCountSpan.textContent = `x${currentHearts}`;
          const heartIcon = heartsCountSpan.previousElementSibling;
          if (heartIcon) {
               heartIcon.style.color = currentHearts > 0 ? '#ff4b4b' : '#adb5bd';
+              // Optional: Add animation for low hearts
+              heartIcon.classList.toggle('fa-beat', currentHearts === 1 && currentHearts > 0);
+              heartIcon.style.animationDuration = currentHearts === 1 ? '1s' : null; // Control speed
          }
     }
 
-    function showFeedback(message, type) {
+    function showFeedback(message, type) { // type = 'correct' or 'incorrect'
+        if(!feedbackArea) return;
         feedbackArea.textContent = message;
-        feedbackArea.className = `feedback ${type}`;
-        feedbackArea.classList.add('visible');
+        feedbackArea.className = `feedback ${type}`; // Apply base and type class
+        feedbackArea.classList.add('visible');      // Make visible via CSS transition
     }
 
-    // --- Updated to handle matching feedback ---
     function styleInputFeedback(questionType, isCorrect) {
         const correctClass = 'correct';
         const incorrectClass = 'incorrect';
 
-        // Clear previous non-matching feedback styles first
-        const textInput = answerInputArea.querySelector('#text-answer') || questionText.querySelector('#text-answer');
-        if (textInput) textInput.classList.remove(correctClass, incorrectClass);
-        answerInputArea.querySelectorAll('.mc-option').forEach(label => {
-             label.classList.remove(correctClass, incorrectClass);
-        });
+        // Helper for text/fib inputs
+        const styleTextInput = (inputElement) => {
+            if (inputElement) {
+                inputElement.classList.remove(correctClass, incorrectClass);
+                inputElement.classList.add(isCorrect ? correctClass : incorrectClass);
+            }
+        };
 
-        // Apply styles based on type
         switch (questionType) {
             case 'translation':
             case 'sentence_transformation':
+                styleTextInput(answerInputArea.querySelector('#text-answer'));
+                break;
             case 'fill_in_blank':
-                if (textInput) {
-                    textInput.classList.add(isCorrect ? correctClass : incorrectClass);
-                }
+                styleTextInput(questionText.querySelector('#text-answer'));
                 break;
             case 'multiple_choice':
                 const radios = answerInputArea.querySelectorAll('input[name="mc-answer"]');
                 radios.forEach(radio => {
-                    const label = radio.closest('.mc-option');
-                    if (!label) return;
-                    const question = questions[currentQuestionIndex];
-                    if (radio.value === question.answer) {
-                        label.classList.add(correctClass); // Mark the correct option green
-                    } else if (radio.checked && !isCorrect) {
-                        label.classList.add(incorrectClass); // Mark the selected wrong option red
+                    const labelDiv = radio.closest('.mc-option'); // Get the container div
+                    if (!labelDiv) return;
+                    labelDiv.classList.remove(correctClass, incorrectClass); // Clear previous first
+                    const question = questionsToAsk[currentQuestionIndex]; // Current question object
+                    const isThisOptionCorrectAnswer = (radio.value === question.answer);
+
+                    if (isThisOptionCorrectAnswer) {
+                        labelDiv.classList.add(correctClass); // Always mark correct one green
+                    }
+                    if (radio.checked && !isCorrect) {
+                        // User selected this, and it was wrong
+                        labelDiv.classList.add(incorrectClass); // Mark user's wrong choice red
                     }
                 });
                 break;
             case 'matching':
-                 // Styling for matching is handled directly within handleCheckAnswer
-                 // by adding 'correct-pair' or 'incorrect-pair' classes.
-                 // No further action needed here for matching type.
+                 // Matching styling is handled separately in handleCheckAnswer by adding
+                 // 'correct-pair' and 'incorrect-pair' classes to the button elements.
                  break;
         }
     }
 
     function showError(message, isFatal = true) {
-        // ... (keep existing logic) ...
-         console.error("Lesson Error:", message);
-        questionInstruction.textContent = 'Error';
-        questionText.textContent = message;
-        answerInputArea.innerHTML = '';
-        feedbackArea.innerHTML = '';
-        if (isFatal) {
-            checkButton.disabled = true;
-            continueButton.style.display = 'none';
+        console.error("Lesson Error:", message);
+        if(questionInstruction) questionInstruction.textContent = 'Error';
+        if(questionText) questionText.textContent = message;
+        if(answerInputArea) answerInputArea.innerHTML = '';
+        if(feedbackArea) { feedbackArea.textContent = message; feedbackArea.className = 'feedback incorrect visible'; }
+
+        if (isFatal) { // Disable buttons on fatal errors
+            if(checkButton) { checkButton.disabled = true; checkButton.style.display = 'none'; }
+            if(continueButton) continueButton.style.display = 'none';
         }
+        // Consider adding a "Return to Dashboard" button on error
     }
 
-    // --- API Communication (loseHeart, completeLesson remain the same) ---
+    // --- API Communication ---
     async function loseHeart() {
-         // ... (keep existing logic) ...
-          if (currentHearts <= 0) return;
+        if (currentHearts <= 0) return; // Safeguard
 
         currentHearts--;
         updateHeartsDisplay();
         console.log(`Lost a heart. Remaining: ${currentHearts}`);
 
         if (currentHearts <= 0) {
-            checkButton.disabled = true;
-             // Ensure matching items are also disabled
-             answerInputArea.querySelectorAll('.match-item').forEach(item => item.disabled = true);
-            showFeedback("Oh no, you're out of hearts!", "incorrect");
+            // Disable interaction immediately if hearts run out
+             if(checkButton) checkButton.disabled = true;
+             answerInputArea.querySelectorAll('button, input').forEach(el => el.disabled = true); // Disable all inputs/buttons
+             showFeedback("Oh no, you're out of hearts! Review your mistakes.", "incorrect");
+             // Don't hide continue, allow user to proceed (and potentially fail review if needed)
+             // but checking is blocked.
         }
 
         try {
             const response = await fetch('/lose_heart', { method: 'POST' });
             if (!response.ok) {
-                console.error("Failed to update heart count on server.");
+                console.error(`Server error losing heart: ${response.status} ${response.statusText}`);
+                // Maybe attempt to revert UI heart count? Or show persistent error?
+                // currentHearts++; updateHeartsDisplay(); // Example revert
             } else {
                  console.log("Server confirmed heart loss.");
-                 // const data = await response.json(); // If you need updated count/time
+                 // const data = await response.json(); // Process response if needed
             }
         } catch (error) {
             console.error("Network error losing heart:", error);
+            // Inform user of network issue? Revert UI heart count?
+            // currentHearts++; updateHeartsDisplay(); // Example revert
         }
     }
 
     async function completeLesson() {
-         // ... (keep existing logic) ...
-         console.log("Lesson complete!");
+        console.log("Lesson complete!");
+        if(progressBar) progressBar.style.width = '100%'; // Ensure progress is full
+
         showFeedback("Lesson Complete!", "correct");
-        checkButton.style.display = 'none';
-        continueButton.style.display = 'none';
+        if(checkButton) checkButton.style.display = 'none';
+        if(continueButton) continueButton.style.display = 'none';
 
         try {
             const url = `/complete_lesson/${lessonId}?lang=${language}`;
@@ -643,9 +697,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 showFeedback(`Lesson Complete! +${result.xp_earned || '??'} XP`, "correct");
                 setTimeout(() => {
                     window.location.href = `/dashboard?lang=${language}`;
-                }, 1500);
+                }, 2000); // Redirect after 2 seconds
             } else {
-                console.error("Failed to mark lesson as complete on server.");
+                console.error(`Server error completing lesson: ${response.status} ${response.statusText}`);
                 showError("Could not save lesson completion. Please try again later.", false);
             }
         } catch (error) {
@@ -656,4 +710,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Start the Lesson ---
     initLesson();
-});
+
+}); // End DOMContentLoaded
