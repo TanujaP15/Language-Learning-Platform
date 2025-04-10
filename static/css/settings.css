@@ -1,0 +1,91 @@
+/* static/css/settings.css */
+
+body {
+    background-color: #f8f9fa;
+}
+
+.settings-container {
+    padding-top: 1.5rem;
+    padding-bottom: 3rem;
+}
+
+.settings-container h1 {
+    font-weight: 700;
+    color: #343a40;
+}
+
+.settings-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.75rem; /* Slightly more rounded */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.settings-card .card-header {
+    font-weight: 600;
+    font-size: 1.1rem;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 0.75rem 0.75rem 0 0; /* Match card radius */
+    padding: 0.9rem 1.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.settings-card .card-body {
+    padding: 1.5rem;
+}
+
+/* Style form elements */
+.settings-card .form-label {
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    font-size: 0.95rem;
+}
+
+.settings-card .form-control {
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.9rem;
+}
+
+.settings-card .form-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.settings-card button[type="submit"] {
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    border-radius: 0.5rem;
+}
+
+/* Danger Zone Styling */
+.delete-card {
+    border-color: #dc3545; /* Red border */
+}
+
+.delete-card .card-header {
+    /* Use Bootstrap classes */
+}
+
+.delete-card .card-title {
+    color: #dc3545; /* Red title */
+    font-weight: 700;
+}
+
+.delete-card .btn-danger {
+    font-weight: bold;
+}
+
+/* Style for flash messages container if needed */
+/* .flash-messages { margin-bottom: 1rem; } */
+
+/* Add specific navbar styles if not reusing profile.css */
+.profile-nav { /* Example if reusing */
+    padding: 0.6rem 1.5rem;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+/* ... (copy other needed navbar styles from profile.css or dashboard.css) */

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Profile | LinguaLearn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- You might reuse some dashboard styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <!-- Add specific profile styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+</head>
+<body>
+    <!-- Simplified Header for Profile Page -->
+    <nav class="app-navbar profile-nav">
+        <div class="brand-container">
+             <a href="{{ url_for('dashboard') }}" class="brand-link">
+                <div class="brand-logo">
+                    <i class="fas fa-language"></i>
+                </div>
+                <span class="brand-name">LinguaLearn</span>
+            </a>
+        </div>
+        <div class="nav-controls">
+             <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary back-to-dash-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+             </a>
+        </div>
+    </nav>
+
+    <div class="profile-container container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+
+                <!-- Profile Header Card -->
+                <div class="card profile-header-card mb-4">
+                    <div class="card-body text-center">
+                        <div class="profile-icon-xlarge mb-3 mx-auto" style="background-color: {{ profile_color }};">
+                            {{ initial }}
+                        </div>
+                        <h2 class="card-title mb-1">{{ fullname }}</h2>
+                        <p class="text-muted mb-3">{{ email }}</p>
+                        <p class="text-muted join-date">{{ join_date_formatted }}</p>
+                        <a href="{{ url_for('settings') }}" class="btn btn-outline-primary mt-2">
+                            <i class="fas fa-cog"></i> Edit Profile / Settings
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Stats Section -->
+                <div class="card stats-card">
+                    <div class="card-header">
+                        <h3>Your Statistics</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 stats-grid">
+                            <!-- Level -->
+                            <div class="col-6 col-md-4">
+                                <div class="stat-item">
+                                    <i class="fas fa-layer-group stat-icon level-icon"></i>
+                                    <span class="stat-value">{{ level }}</span>
+                                    <span class="stat-label">Level</span>
+                                </div>
+                            </div>
+                            <!-- XP -->
+                            <div class="col-6 col-md-4">
+                                <div class="stat-item">
+                                    <i class="fas fa-star stat-icon xp-icon"></i>
+                                    <span class="stat-value">{{ xp }}</span>
+                                    <span class="stat-label">Total XP</span>
+                                </div>
+                            </div>
+                             <!-- Streak -->
+                             <div class="col-6 col-md-4">
+                                <div class="stat-item">
+                                    <i class="fas fa-fire stat-icon streak-icon"></i>
+                                    <span class="stat-value">{{ streak }}</span>
+                                    <span class="stat-label">Day Streak</span>
+                                </div>
+                            </div>
+                            <!-- Gems -->
+                            <div class="col-6 col-md-4">
+                                <div class="stat-item">
+                                    <i class="fas fa-gem stat-icon gems-icon"></i>
+                                    <span class="stat-value">{{ gems }}</span>
+                                    <span class="stat-label">Gems</span>
+                                </div>
+                            </div>
+                             <!-- Placeholder for future stats -->
+                            <div class="col-6 col-md-4">
+                                <!-- Remove 'disabled' class if count > 0 -->
+                                <div class="stat-item {% if lessons_done_count == 0 %}disabled{% endif %}">
+                                    <i class="fas fa-book-open stat-icon lessons-icon"></i> <!-- Added specific class -->
+                                    <span class="stat-value">{{ lessons_done_count }}</span>
+                                    <span class="stat-label">Lessons Done</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <!-- Remove 'disabled' class if count > 0 -->
+                               <div class="stat-item {% if achievements_count == 0 %}disabled{% endif %}">
+                                   <i class="fas fa-shield-alt stat-icon achievements-icon"></i> <!-- Added specific class -->
+                                   <span class="stat-value">{{ achievements_count }}</span>
+                                   <span class="stat-label">Achievements</span>
+                            </div>
+
+                        <!-- XP Progress Bar -->
+                            <div class="xp-progress-section mt-4">
+                                <h5 class="text-center mb-2">Progress to Level {{ level + 1 }}</h5>
+                                <div class="xp-bar-container profile-xp-bar">
+                                    <div class="xp-bar" style="width: {{ xp_percentage }}%"></div>
+                                    <span class="xp-text">{{ xp }}/{{ next_level_xp }} XP</span>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+
+                <!-- Achievements Section -->
+                <div class="card achievements-card mt-4">
+                    <div class="card-header">
+                        <h3>Achievements</h3>
+                    </div>
+                    <div class="card-body achievement-list">
+                        {# <!-- Debug: Print the raw list --> #}
+                        {# <p>DEBUG: {{ earned_achievements }}</p> #}
+
+                        {% if earned_achievements %}
+                            {% for ach in earned_achievements %}
+                                {# <!-- Debug: Print each item --> #}
+                                {# <p>DEBUG item: {{ ach }}</p> #}
+                                <div class="achievement-item">
+                                    <div class="achievement-icon">
+                                        {% if ach.icon %}
+                                            <i class="{{ ach.icon }}"></i> {# Check: Is ach.icon correct? #}
+                                        {% else %}
+                                            <i class="fas fa-trophy"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="achievement-details">
+                                        {# Check: Are these variable names EXACTLY correct? #}
+                                        <h5 class="achievement-name">{{ ach.name }}</h5>
+                                        <p class="achievement-desc">{{ ach.description }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-center text-muted py-3">No achievements earned yet. Keep learning!</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- End Achievements Section -->
+
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

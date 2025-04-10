@@ -14,6 +14,39 @@ HEART_REGEN_TIME_SECONDS = 120 # Example: 2 minutes (120 seconds) per heart
 MAX_HEARTS = 5
 XP_LEVELS = [0, 50, 120, 250, 500, 1000, 2000] # XP required to *reach* the next level (level 0 needs 0, level 1 needs 50, etc.)
 LEADERBOARD_LIMIT = 30 # How many users to show on the leaderboard
+HEART_REFILL_COST_GEMS = 50
+LESSON_GEM_REWARD = 1       # Gems awarded per lesson completion
+LEVEL_UP_GEM_REWARD = 50  
+ALL_ACHIEVEMENTS = {
+    # Key: Unique Identifier
+    # Value: Dictionary with achievement details
+    'STREAK_3': {
+        'name': 'On Fire!', 'description': 'Maintain a 3-day streak.', 'icon': 'fas fa-fire',
+        'criteria_type': 'streak', 'criteria_value': 3,
+        'reward_gems': 10, 'reward_xp': 20
+    },
+    'STREAK_7': {
+        'name': 'Week Streak', 'description': 'Maintain a 7-day streak.', 'icon': 'fas fa-calendar-week',
+        'criteria_type': 'streak', 'criteria_value': 7,
+        'reward_gems': 25, 'reward_xp': 50
+    },
+    'LEVEL_5': {
+        'name': 'Level 5 Reached', 'description': 'Reach Level 5.', 'icon': 'fas fa-star',
+        'criteria_type': 'level', 'criteria_value': 5,
+        'reward_gems': 15, 'reward_xp': 30
+    },
+    'LESSONS_1': {
+        'name': 'First Steps', 'description': 'Complete your first lesson.', 'icon': 'fas fa-shoe-prints',
+        'criteria_type': 'lessons_total', 'criteria_value': 1,
+        'reward_gems': 5, 'reward_xp': 10
+    },
+    'LESSONS_10':{
+        'name': 'Getting Started', 'description': 'Complete 10 lessons (total).', 'icon': 'fas fa-seedling',
+        'criteria_type': 'lessons_total', 'criteria_value': 10,
+        'reward_gems': 20, 'reward_xp': 40
+    },
+    # Add more achievements:
+}
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "a_default_secret_key_for_dev") # Provide default for dev
@@ -232,6 +265,101 @@ def get_profile_color(text):
     b = min(200, max(50, b))
     return f"#{r:02x}{g:02x}{b:02x}"
 
+def check_and_award_achievements(user_email, conn):
+    """
+    Checks user stats against defined achievements and awards if necessary.
+    Requires an active database connection `conn` to be passed in for transaction control.
+    Returns a list of newly earned achievement details (dictionaries).
+    """
+    newly_earned = []
+    try:
+        cursor = conn.cursor() # Use cursor from the passed connection
+
+        # Get current user stats needed for checks
+        user = cursor.execute("SELECT streak, xp, email FROM users WHERE email = ?", (user_email,)).fetchone()
+        if not user:
+             print(f"ERROR: User {user_email} not found during achievement check.")
+             return [] # Return empty if user not found
+
+        current_level, _, _ = calculate_level_xp(user['xp'])
+
+        # Get total lessons completed (across all languages)
+        total_lessons = cursor.execute(
+            "SELECT COUNT(DISTINCT lesson_id || '-' || language) as count FROM progress WHERE user_email = ? AND completed = 1", (user_email,)
+        ).fetchone()['count'] or 0
+
+        # Get achievements already earned by the user
+        earned_keys = {row['achievement_key'] for row in cursor.execute(
+            "SELECT achievement_key FROM user_achievements WHERE user_email = ?", (user_email,)
+        ).fetchall()}
+
+        # Iterate through defined achievements
+        for key, achievement in ALL_ACHIEVEMENTS.items():
+            if key in earned_keys: continue # Skip if already earned
+
+            criteria_met = False
+            crit_type = achievement['criteria_type']
+            crit_val = achievement['criteria_value']
+            crit_extra = achievement.get('criteria_extra') # For language-specific criteria
+
+            # --- Check Criteria ---
+            if crit_type == 'streak' and user['streak'] >= crit_val:
+                criteria_met = True
+            elif crit_type == 'level' and current_level >= crit_val:
+                criteria_met = True
+            elif crit_type == 'lessons_total' and total_lessons >= crit_val:
+                 criteria_met = True
+            elif crit_type == 'lessons_language' and crit_extra:
+                 # Need to query lessons completed for a specific language
+                 lang_lessons = cursor.execute(
+                     "SELECT COUNT(*) as count FROM progress WHERE user_email = ? AND language = ? AND completed = 1",
+                     (user_email, crit_extra)
+                 ).fetchone()['count'] or 0
+                 if lang_lessons >= crit_val:
+                      criteria_met = True
+            # Add more elif blocks for other criteria_type values ('perfect_lesson', etc.)
+
+            # --- Award if criteria met ---
+            if criteria_met:
+                print(f"User {user_email} potentially earned achievement: {key}")
+                try:
+                    # Insert into user_achievements
+                    cursor.execute("INSERT INTO user_achievements (user_email, achievement_key) VALUES (?, ?)",
+                                 (user_email, key))
+
+                    # Award rewards (if any)
+                    reward_xp = achievement.get('reward_xp', 0)
+                    reward_gems = achievement.get('reward_gems', 0)
+                    if reward_xp > 0 or reward_gems > 0:
+                        cursor.execute("UPDATE users SET xp = xp + ?, gems = gems + ? WHERE email = ?",
+                                     (reward_xp, reward_gems, user_email))
+                        print(f"Awarded: {reward_xp} XP, {reward_gems} Gems for {key}")
+
+                    # Use **achievement to create a copy and add key if needed
+                    earned_detail = {**achievement, 'achievement_key': key}
+                    newly_earned.append(earned_detail)
+                    # Add to earned_keys immediately to prevent duplicate checks within this call
+                    earned_keys.add(key)
+
+                except sqlite3.IntegrityError:
+                     # This can happen in rare race conditions or if logic has error. Ignore.
+                     print(f"Info: User {user_email} likely already earned {key} (IntegrityError). Skipping.")
+                except sqlite3.Error as award_err:
+                     print(f"DATABASE ERROR awarding achievement {key} for {user_email}: {award_err}")
+                     # Should we rollback everything? For now, just log and continue checking others.
+                     # conn.rollback() # Careful with rollback inside loop if called from other transactions
+
+        # No commit here - commit is handled by the calling function (e.g., complete_lesson_api)
+        return newly_earned
+
+    except sqlite3.Error as check_err:
+        print(f"DATABASE ERROR checking achievements for {user_email}: {check_err}")
+        return [] # Return empty on error
+    except Exception as e:
+         print(f"UNEXPECTED ERROR checking achievements for {user_email}: {e}")
+         return []
+
+
 # --- Routes ---
 
 @app.route('/')
@@ -245,47 +373,49 @@ def home():
 
 # ... (other code) ...
 
+# app.py
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if 'user' in session:
         return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
-        # ... (your existing POST logic) ...
         fullname = request.form.get('fullname')
         email = request.form.get('email')
         password = request.form.get('password')
 
         if not fullname or not email or not password:
             flash("All fields are required!", "danger")
-            # --- Pass is_signup=True when re-rendering ---
             return render_template("login.html", is_signup=True)
 
         hashed_password = generate_password_hash(password)
-        today_iso = date.today().isoformat()
+        today_iso = date.today().isoformat() # Format as YYYY-MM-DD
 
         try:
             conn = get_db_connection()
+            # *** ADD join_date to INSERT statement and VALUES ***
             conn.execute(
-                "INSERT INTO users (fullname, email, password, last_streak_update, last_daily_reset) VALUES (?, ?, ?, ?, ?)",
-                (fullname, email, hashed_password, today_iso, today_iso)
+                """INSERT INTO users
+                   (fullname, email, password, last_streak_update, last_daily_reset, join_date)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (fullname, email, hashed_password, today_iso, today_iso, today_iso) # Pass today_iso for join_date
             )
             conn.commit()
             conn.close()
+
             session['user'] = email
             flash("Account created successfully! Welcome! 🎉", "success")
             return redirect(url_for('dashboard'))
+
         except sqlite3.IntegrityError:
             flash("Email already exists. Please log in.", "warning")
-            # --- Redirect to login, don't need is_signup=True here ---
             return redirect(url_for('login'))
         except Exception as e:
              flash(f"An error occurred: {e}", "danger")
-             # --- Pass is_signup=True when re-rendering ---
              return render_template("login.html", is_signup=True)
 
-    # --- Handle GET request for /signup ---
-    return render_template("login.html", is_signup=True) # Pass flag to show signup form
+    return render_template("login.html", is_signup=True)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -368,6 +498,64 @@ def lose_heart_api(): # Renamed
     _, time_left = update_hearts(user_email)
     return jsonify({"hearts": new_hearts, "time_left": time_left}) # Return time_left too
 
+@app.route('/shop/buy_hearts', methods=['POST'])
+def buy_hearts():
+    """Allows users to spend gems to refill hearts."""
+    if "user" not in session:
+        return jsonify({"error": "Not authorized", "success": False}), 401
+
+    user_email = session['user']
+
+    conn = get_db_connection()
+    try:
+        # Use cursor for transaction control
+        cursor = conn.cursor()
+        user = cursor.execute("SELECT hearts, gems FROM users WHERE email = ?", (user_email,)).fetchone()
+
+        if not user:
+            return jsonify({"error": "User not found", "success": False}), 404
+
+        current_hearts = user['hearts']
+        current_gems = user['gems']
+
+        if current_hearts >= MAX_HEARTS:
+            return jsonify({"error": "Your hearts are already full!", "success": False, "code": "HEARTS_FULL"}), 400
+
+        if current_gems < HEART_REFILL_COST_GEMS:
+            return jsonify({"error": f"Not enough gems! You need {HEART_REFILL_COST_GEMS}.", "success": False, "code": "INSUFFICIENT_GEMS"}), 400
+
+        # --- Perform Purchase ---
+        new_gems = current_gems - HEART_REFILL_COST_GEMS
+        new_hearts = MAX_HEARTS
+
+        cursor.execute("UPDATE users SET gems = ?, hearts = ? WHERE email = ?",
+                     (new_gems, new_hearts, user_email))
+        conn.commit() # Commit the purchase
+
+        print(f"User {user_email}: Bought hearts refill. Gems: {current_gems} -> {new_gems}, Hearts: {current_hearts} -> {new_hearts}")
+
+        # Fetch updated time_left (will be 0 now)
+        _, time_left = update_hearts(user_email)
+
+        return jsonify({
+            "success": True,
+            "message": "Hearts refilled successfully!",
+            "new_gems": new_gems,
+            "new_hearts": new_hearts,
+            "time_left": time_left
+        })
+
+    except sqlite3.Error as e:
+        print(f"DATABASE ERROR during buy_hearts for {user_email}: {e}")
+        conn.rollback()
+        return jsonify({"error": "Database error during purchase.", "success": False}), 500
+    finally:
+        if conn: conn.close()
+
+# app.py
+
+# ... (keep all other imports, constants, functions like get_db_connection, etc.) ...
+
 @app.route('/complete_lesson/<int:lesson_id>', methods=['POST'])
 def complete_lesson_api(lesson_id):
     if "user" not in session:
@@ -385,44 +573,46 @@ def complete_lesson_api(lesson_id):
          return jsonify({"error": "Lesson details not found"}), 404
 
     lesson_xp = lesson_info.get("xp", 10)
+    lesson_gems = 1 # Award 1 gem per lesson
 
     conn = get_db_connection()
-    cursor = conn.cursor()
+    try:
+        cursor = conn.cursor()
 
-    # --- Mark lesson as completed ---
-    try: # Wrap DB operations in try/except
+        # --- Mark lesson as completed FIRST ---
+        # Use INSERT OR REPLACE to handle potential re-completion attempts safely
         cursor.execute("INSERT OR REPLACE INTO progress (user_email, lesson_id, language, completed) VALUES (?, ?, ?, 1)",
                        (user_email, lesson_id, lang))
         print(f"User {user_email}: Marked lesson {lesson_id} ({lang}) as completed in progress table.")
 
-        # --- Update User Stats (XP, Daily Progress, Streak) ---
+        # --- Get Current User Stats for Update ---
         user_stats = cursor.execute(
             "SELECT xp, daily_progress, daily_goal, streak, last_streak_update FROM users WHERE email = ?",
             (user_email,)
         ).fetchone()
 
         if not user_stats:
-             # This shouldn't happen if user is logged in, but good practice
-             print(f"CRITICAL ERROR: User {user_email} not found in users table during lesson completion.")
-             conn.rollback()
-             conn.close()
+             print(f"CRITICAL ERROR: User {user_email} not found in users table during lesson completion update.")
+             conn.rollback() # Rollback lesson completion mark
              return jsonify({"error": "User data not found during update"}), 500
 
-        # --- START DETAILED STREAK DEBUG ---
-        print(f"--- Streak Check Start (User: {user_email}, Lesson: {lesson_id}, Lang: {lang}) ---")
+        # --- START DETAILED STREAK DEBUG & REFINED LOGIC ---
+        print(f"\n--- Streak Check Start (User: {user_email}, Lesson: {lesson_id}, Lang: {lang}) ---")
         print(f"DB Values Read -> Streak: {user_stats['streak']}, Last Update STR: '{user_stats['last_streak_update']}'") # Added quotes for clarity
 
+        old_level, _, _ = calculate_level_xp(user_stats["xp"]) # Calculate level *before* adding XP
         new_xp = user_stats["xp"] + lesson_xp
         new_daily_progress = user_stats["daily_progress"] + lesson_xp
-        current_streak = user_stats["streak"]
-        # updated_streak = current_streak # Default assumption
+        current_streak = user_stats["streak"] # Streak value *before* this lesson's update
+        updated_streak = current_streak # Default: assume no change initially
 
         today = date.today()
         last_streak_update_str = user_stats["last_streak_update"]
         last_streak_date = None
-        if last_streak_update_str: # Check if the string is not None or empty
+
+        if last_streak_update_str: # Check if the string exists and is not empty
             try:
-                # Attempt to parse the date string
+                # Attempt to parse the date string (assuming YYYY-MM-DD)
                 last_streak_date = date.fromisoformat(last_streak_update_str)
             except (ValueError, TypeError) as e: # Catch potential errors during parsing
                 print(f"WARNING: Could not parse last_streak_update date '{last_streak_update_str}' for user {user_email}. Error: {e}")
@@ -430,74 +620,94 @@ def complete_lesson_api(lesson_id):
         else:
              print(f"DB Info -> last_streak_update was NULL or empty.")
 
-
         print(f"Parsed/Compared -> Today: {today}, Last Update DATE: {last_streak_date}")
 
+        # --- Refined Streak Logic ---
         if last_streak_date == today:
-            # If last update was today BUT current streak is 0, it means this is the FIRST activity today starting the streak.
+            # Activity already happened today.
+            # If streak is 0, it means it was reset *today* before this activity,
+            # so this is the *first* successful activity today, start streak at 1.
+            # Otherwise, maintain the current streak.
             if current_streak == 0:
-                print("Condition: First activity today. Starting streak at 1.")
+                print("Condition: First activity today after reset/signup? Starting streak at 1.")
                 updated_streak = 1
             else:
-                # Otherwise, already active today, maintain the existing streak.
                 print("Condition: Already active today. Streak maintained.")
-                updated_streak = current_streak
+                updated_streak = current_streak # No change needed
         elif last_streak_date == (today - timedelta(days=1)):
-            # Active yesterday, INCREMENT streak
+            # Activity occurred yesterday, increment streak.
             print("Condition: Last update was yesterday. Incrementing streak.")
             updated_streak = current_streak + 1
-        else: # Covers None (first time or failed parse) or date < yesterday (missed day/reset)
-            # First activity ever OR missed day(s), RESET streak to 1
+        else:
+            # Covers several cases:
+            # 1. last_streak_date is None (first ever activity, or DB error).
+            # 2. last_streak_date is older than yesterday (missed one or more days).
+            # In both cases, the streak starts/restarts at 1.
             print(f"Condition: New day (last update: {last_streak_date}) or missed day(s) or first activity. Setting streak to 1.")
             updated_streak = 1
+        # --- End Refined Streak Logic ---
 
-
-        print(f"Result -> Current Streak: {current_streak}, Calculated New Streak: {updated_streak}")
-
-        # Execute the database update
-        cursor.execute(
-            """UPDATE users
-               SET xp = ?, daily_progress = ?, streak = ?, last_streak_update = ?
-               WHERE email = ?""",
-            (new_xp, new_daily_progress, updated_streak, today.isoformat(), user_email)
-        )
-        print(f"Executing DB Update -> New XP: {new_xp}, New Daily: {new_daily_progress}, New Streak: {updated_streak}, New Last Update: {today.isoformat()}")
-
-        conn.commit()
-
-        print(f"DB Commit executed successfully.")
-        print("--- Streak Check End ---")
+        print(f"Result -> Current Streak (Before Update): {current_streak}, Calculated New Streak: {updated_streak}")
         # --- END DETAILED STREAK DEBUG ---
 
 
-        # --- Fetch updated completed list for response ---
+        # --- Check for Level Up AFTER calculating new XP ---
+        new_level, _, _ = calculate_level_xp(new_xp)
+        gems_from_level_up = 0
+        if new_level > old_level:
+            gems_from_level_up = 50 # Award 50 gems for leveling up (example)
+            print(f"User {user_email} leveled up: {old_level} -> {new_level}! Awarding {gems_from_level_up} gems.")
+
+        # --- Total Gems to Add ---
+        total_gems_to_add = lesson_gems + gems_from_level_up
+
+        # --- Execute the Database Update ---
+        # Always update last_streak_update to today's date when activity occurs
+        today_iso = today.isoformat()
+        cursor.execute(
+            """UPDATE users
+               SET xp = ?, daily_progress = ?, streak = ?, last_streak_update = ?, gems = gems + ?
+               WHERE email = ?""",
+            (new_xp, new_daily_progress, updated_streak, today_iso, total_gems_to_add, user_email)
+        )
+        print(f"Executing DB Update -> New XP: {new_xp}, New Daily: {new_daily_progress}, New Streak: {updated_streak}, New Last Update: {today_iso}, Gems Added: {total_gems_to_add}")
+
+        # --- Check for Achievements AFTER stats are updated ---
+        newly_earned_achievements = check_and_award_achievements(user_email, conn)
+
+        # --- Commit Transaction ---
+        conn.commit()
+        print("Transaction Committed.")
+
+        # Fetch updated completed list for response
         cursor.execute("SELECT lesson_id FROM progress WHERE user_email = ? AND completed = 1 AND language = ?", (user_email, lang))
         completed_lessons = [row["lesson_id"] for row in cursor.fetchall()]
 
-        conn.close()
-
-        return jsonify({
+        # Prepare JSON response
+        response_data = {
             "message": "Lesson completed!",
             "xp_earned": lesson_xp,
             "new_total_xp": new_xp,
-            "new_streak": updated_streak,
-            "completed_lessons": completed_lessons
-        })
+            "new_streak": updated_streak, # Return the calculated streak
+            "completed_lessons": completed_lessons,
+            "new_achievements": newly_earned_achievements
+        }
+        return jsonify(response_data)
 
-    except sqlite3.Error as db_err: # Catch potential SQLite errors during the whole process
+    # --- Error Handling ---
+    except sqlite3.Error as db_err:
          print(f"DATABASE ERROR during lesson completion for {user_email}: {db_err}")
-         # Rollback any partial changes
-         conn.rollback()
-         conn.close()
+         conn.rollback() # Rollback changes on error
          return jsonify({"error": "Database error during lesson completion."}), 500
-    except Exception as e: # Catch any other unexpected errors
+    except Exception as e:
          print(f"UNEXPECTED ERROR during lesson completion for {user_email}: {e}")
-         # Ensure connection is closed even on unexpected errors
-         if conn:
-             conn.rollback() # Rollback just in case
-             conn.close()
+         conn.rollback() # Rollback changes on error
          return jsonify({"error": "An unexpected error occurred."}), 500
+    finally:
+        # Ensure connection is always closed
+        if conn: conn.close()
 
+# ... (rest of your app.py, including check_and_award_achievements, etc.) ...
 
 # --- Page Routes ---
 
@@ -611,6 +821,8 @@ def dashboard():
          return redirect(url_for('login'))
 
 # ... (rest of app.py)
+
+
 
 @app.route('/leaderboard')
 def leaderboard():
@@ -745,6 +957,10 @@ def lesson_page(lesson_id):
     return redirect(url_for('dashboard', lang=lang))
 
 # Add routes for profile, settings if needed
+# app.py
+
+# app.py
+
 @app.route('/profile')
 def profile():
     if "user" not in session:
@@ -752,31 +968,262 @@ def profile():
         return redirect(url_for('login'))
 
     user_email = session['user']
-    user = get_user_data(user_email) # Use your existing helper
+    user_info = get_user_data(user_email)
 
-    if not user:
-        flash("Could not retrieve user data.", "danger")
-        return redirect(url_for('dashboard')) # Or login page
-
-    # You'll need to create a templates/profile.html file later
-    # For now, just return some text or render a basic template if you have one
-    # return f"<h1>Profile Page for {user['fullname']}</h1><p>Email: {user['email']}</p><p>XP: {user['xp']}</p>"
-    # Or, if you create a basic profile.html:
-    # return render_template("profile.html", user=user)
-
-    # Simplest fix for now - just return a message:
-    flash("Profile page is under construction!", "info")
-    return redirect(url_for('dashboard')) # Redirect back for now
-
-@app.route('/settings')
-def settings():
-    if "user" not in session:
-        flash("Please log in to view settings.", "warning")
+    if not user_info:
+        flash("Could not retrieve your profile data.", "danger")
+        session.pop('user', None)
         return redirect(url_for('login'))
 
-    # Similar logic for settings if you have a settings link
-    flash("Settings page is under construction!", "info")
-    return redirect(url_for('dashboard'))
+    # --- Calculate Derived Stats ---
+    level, xp_percentage, next_level_xp = calculate_level_xp(user_info["xp"])
+    profile_color = get_profile_color(user_info["fullname"] or user_info["email"])
+    formatted_join_date = "Join date not recorded"
+    try:
+        if "join_date" in user_info.keys() and user_info["join_date"]:
+            join_dt = datetime.strptime(user_info["join_date"], "%Y-%m-%d")
+            formatted_join_date = f"Member since {join_dt.strftime('%B %d, %Y')}"
+    except (KeyError, ValueError, TypeError): pass
+
+    # --- Fetch Achievements (List and Count) ---
+    earned_achievements_list = []
+    earned_achievements_count = 0 # Initialize count
+    try:
+        conn_ach = get_db_connection()
+        if conn_ach:
+             # Fetch details for listing
+             earned_rows = conn_ach.execute(
+                  """SELECT ua.achievement_key, a.name, a.description, a.icon FROM user_achievements ua
+                     JOIN achievements a ON ua.achievement_key = a.achievement_key
+                     WHERE ua.user_email = ? ORDER BY ua.earned_at DESC""", (user_email,)
+              ).fetchall()
+             earned_achievements_list = [dict(row) for row in earned_rows]
+             # Get the count separately (more efficient than len() if list is large)
+             count_result = conn_ach.execute("SELECT COUNT(*) as count FROM user_achievements WHERE user_email = ?", (user_email,)).fetchone()
+             earned_achievements_count = count_result['count'] if count_result else 0
+             conn_ach.close()
+    except Exception as e:
+         print(f"Error fetching profile achievements: {e}")
+
+    # --- Get Completed Lessons Count (Total across all languages) ---
+    total_lessons_completed = 0
+    try:
+        conn_lessons = get_db_connection()
+        if conn_lessons:
+            # Count distinct lessons (lesson_id + language combination)
+            count_result = conn_lessons.execute(
+                "SELECT COUNT(DISTINCT lesson_id || '-' || language) as count FROM progress WHERE user_email = ? AND completed = 1",
+                (user_email,)
+            ).fetchone()
+            total_lessons_completed = count_result['count'] if count_result else 0
+            conn_lessons.close()
+    except Exception as e:
+        print(f"Error fetching completed lessons count for profile: {e}")
+
+    # --- Prepare data for the template ---
+    profile_data = {
+        "fullname": user_info["fullname"] or user_email,
+        "email": user_email,
+        "join_date_formatted": formatted_join_date,
+        "profile_color": profile_color,
+        "initial": (user_info["fullname"] or user_email)[0].upper(),
+        "level": level,
+        "xp": user_info["xp"],
+        "xp_percentage": xp_percentage,
+        "next_level_xp": next_level_xp,
+        "streak": user_info["streak"],
+        "gems": user_info["gems"],
+        "earned_achievements": earned_achievements_list, # Pass the list for display later
+        "achievements_count": earned_achievements_count, # <<< Pass the count
+        "lessons_done_count": total_lessons_completed    # <<< Pass the count
+    }
+
+    return render_template("profile.html", **profile_data)
+
+# --- Settings Page Routes ---
+
+@app.route('/settings', methods=['GET'])
+def settings():
+    """Displays the settings page."""
+    if "user" not in session:
+        flash("Please log in to access settings.", "warning")
+        return redirect(url_for('login'))
+
+    user_email = session['user']
+    user_info = get_user_data(user_email)
+
+    if not user_info:
+        flash("Could not retrieve your profile data.", "danger")
+        session.pop('user', None) # Log out if data missing
+        return redirect(url_for('login'))
+
+    return render_template(
+        "settings.html",
+        current_fullname=user_info["fullname"],
+        current_email=user_info["email"]
+    )
+
+@app.route('/settings/update_profile', methods=['POST'])
+def update_profile():
+    """Handles updating user's full name and email."""
+    if "user" not in session:
+        return jsonify({"error": "Not authorized"}), 401 # Return JSON error for potential JS calls
+
+    user_email = session['user']
+    new_fullname = request.form.get('fullname')
+    new_email = request.form.get('email')
+
+    if not new_fullname:
+        flash("Full name cannot be empty.", "danger")
+        return redirect(url_for('settings'))
+
+    if not new_email:
+         flash("Email cannot be empty.", "danger")
+         return redirect(url_for('settings'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Check if email is being changed and if the new email already exists for *another* user
+    if new_email.lower() != user_email.lower():
+        cursor.execute("SELECT 1 FROM users WHERE email = ? AND email != ?", (new_email.lower(), user_email.lower()))
+        existing_user = cursor.fetchone()
+        if existing_user:
+            flash("That email address is already taken by another user.", "warning")
+            conn.close()
+            return redirect(url_for('settings'))
+        else:
+             # Update email if it's valid and different
+            try:
+                cursor.execute("UPDATE users SET fullname = ?, email = ? WHERE email = ?",
+                               (new_fullname, new_email.lower(), user_email))
+                conn.commit()
+                # IMPORTANT: Update the email in the session!
+                session['user'] = new_email.lower()
+                flash("Profile updated successfully!", "success")
+            except sqlite3.Error as e:
+                 conn.rollback()
+                 flash(f"Database error updating profile: {e}", "danger")
+            finally:
+                conn.close()
+    else:
+        # Only update fullname if email hasn't changed
+        try:
+            cursor.execute("UPDATE users SET fullname = ? WHERE email = ?", (new_fullname, user_email))
+            conn.commit()
+            flash("Full name updated successfully!", "success")
+        except sqlite3.Error as e:
+             conn.rollback()
+             flash(f"Database error updating full name: {e}", "danger")
+        finally:
+             conn.close()
+
+    # --- SECURITY NOTE ---
+    # In a production app, changing email should trigger a verification email
+    # to the NEW address before the change is finalized in the database and session.
+    # This prevents hijacking accounts by changing the email to one the attacker controls.
+    # This basic implementation updates it directly for simplicity here.
+
+    return redirect(url_for('settings'))
+
+
+@app.route('/settings/update_password', methods=['POST'])
+def update_password():
+    """Handles updating the user's password."""
+    if "user" not in session:
+        return jsonify({"error": "Not authorized"}), 401
+
+    user_email = session['user']
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+
+    # --- Basic Validation ---
+    if not current_password or not new_password or not confirm_password:
+        flash("All password fields are required.", "danger")
+        return redirect(url_for('settings'))
+
+    if new_password != confirm_password:
+        flash("New passwords do not match.", "danger")
+        return redirect(url_for('settings'))
+
+    if len(new_password) < 6: # Example minimum length
+         flash("New password must be at least 6 characters long.", "danger")
+         return redirect(url_for('settings'))
+
+    # --- Verify Current Password ---
+    user_info = get_user_data(user_email)
+    if not user_info:
+        flash("Could not retrieve user data.", "danger")
+        return redirect(url_for('settings')) # Or redirect to login
+
+    if not check_password_hash(user_info['password'], current_password):
+        flash("Incorrect current password.", "danger")
+        return redirect(url_for('settings'))
+
+    # --- Update Password ---
+    try:
+        new_hashed_password = generate_password_hash(new_password)
+        conn = get_db_connection()
+        conn.execute("UPDATE users SET password = ? WHERE email = ?", (new_hashed_password, user_email))
+        conn.commit()
+        conn.close()
+        flash("Password updated successfully!", "success")
+    except sqlite3.Error as e:
+        flash(f"Database error updating password: {e}", "danger")
+        # Ensure connection is closed even on error
+        if conn: conn.close()
+
+    return redirect(url_for('settings'))
+
+
+@app.route('/settings/delete_account', methods=['POST'])
+def delete_account():
+    """Handles deleting the user's account."""
+    if "user" not in session:
+         return jsonify({"error": "Not authorized"}), 401
+
+    user_email = session['user']
+    confirm_password = request.form.get('confirm_password_delete') # Match input name
+
+    if not confirm_password:
+        flash("Password confirmation is required to delete your account.", "danger")
+        return redirect(url_for('settings'))
+
+    # --- Verify Password ---
+    user_info = get_user_data(user_email)
+    if not user_info:
+        flash("Could not retrieve user data for deletion.", "danger")
+        return redirect(url_for('settings'))
+
+    if not check_password_hash(user_info['password'], confirm_password):
+        flash("Incorrect password. Account deletion cancelled.", "danger")
+        return redirect(url_for('settings'))
+
+    # --- PERFORM DELETION ---
+    # IMPORTANT: Ensure ON DELETE CASCADE is set correctly on the 'progress' table's
+    # foreign key in your database schema (database.py). If it is, deleting
+    # the user should automatically delete their progress records.
+    try:
+        conn = get_db_connection()
+        print(f"ATTEMPTING TO DELETE USER: {user_email}")
+        conn.execute("DELETE FROM users WHERE email = ?", (user_email,))
+        conn.commit()
+        conn.close()
+        print(f"SUCCESSFULLY DELETED USER: {user_email}")
+
+        # Clear the session completely
+        session.clear()
+
+        flash("Your account has been permanently deleted.", "success")
+        return redirect(url_for('login')) # Redirect to login page after deletion
+
+    except sqlite3.Error as e:
+        flash(f"Database error deleting account: {e}", "danger")
+        print(f"DATABASE ERROR deleting account for {user_email}: {e}")
+        # Ensure connection is closed even on error
+        if conn: conn.close()
+        return redirect(url_for('settings')) # Redirect back to settings on error
 
 
 if __name__ == "__main__":

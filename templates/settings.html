@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings | LinguaLearn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Link common styles if needed -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <!-- Link specific settings styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+</head>
+<body>
+    <!-- Settings Header -->
+    <nav class="app-navbar profile-nav"> <!-- Reuse profile nav style -->
+        <div class="brand-container">
+             <a href="{{ url_for('dashboard') }}" class="brand-link">
+                <div class="brand-logo">
+                    <i class="fas fa-language"></i>
+                </div>
+                <span class="brand-name">LinguaLearn</span>
+            </a>
+        </div>
+        <div class="nav-controls">
+             <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary back-to-dash-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+             </a>
+        </div>
+    </nav>
+
+    <div class="settings-container container mt-4">
+        <h1 class="mb-4">Account Settings</h1>
+
+        <!-- Display Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+
+        <div class="row">
+            <div class="col-lg-8 offset-lg-2">
+
+                <!-- Edit Profile Section -->
+                <div class="card settings-card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-user-edit me-2"></i>Edit Profile
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ url_for('update_profile') }}" method="POST">
+                            <div class="mb-3">
+                                <label for="fullname" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="fullname" name="fullname" value="{{ current_fullname }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ current_email }}" required>
+                                <div class="form-text">Changing your email might require verification in future versions.</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Change Password Section -->
+                <div class="card settings-card mb-4">
+                    <div class="card-header">
+                         <i class="fas fa-key me-2"></i>Change Password
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ url_for('update_password') }}" method="POST">
+                            <div class="mb-3">
+                                <label for="current_password" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="current_password" name="current_password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new_password" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="new_password" name="new_password" required minlength="6">
+                                <div class="form-text">Must be at least 6 characters long.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Password</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Delete Account Section -->
+                <div class="card settings-card delete-card mb-4">
+                    <div class="card-header text-white bg-danger">
+                         <i class="fas fa-exclamation-triangle me-2"></i>Danger Zone
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Delete Account</h5>
+                        <p class="card-text text-danger">This action is permanent and cannot be undone. All your learning progress, achievements, and account data will be permanently erased.</p>
+                        <form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.');">
+                            <div class="mb-3">
+                                <label for="confirm_password_delete" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirm_password_delete" name="confirm_password_delete" required>
+                                <div class="form-text">Enter your current password to confirm deletion.</div>
+                            </div>
+                            <button type="submit" class="btn btn-danger w-100">Delete My Account Permanently</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS for Alert Dismissal -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

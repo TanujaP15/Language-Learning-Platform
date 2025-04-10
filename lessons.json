@@ -179,7 +179,7 @@
             {"type": "translation", "question": "Guten Morgen", "answer": "Good morning"},
             {"type": "translation", "question": "Guten Abend", "answer": "Good evening"},
             {"type": "translation", "question": "Wie geht es dir?", "answer": "How are you?"},
-            {"type": "fill_in_blank", "question": "Ich heiße ____.", "answer": "[Name]"},
+            {"type": "fill_in_blank", "question": "Ich ____ Anna.", "answer": "heiße"},
             {"type": "fill_in_blank", "question": "Guten ____! (Morning)", "answer": "Morgen"},
             {"type": "multiple_choice", "question": "How do you say 'Goodbye' in German?", "options": ["Hallo", "Auf Wiedersehen", "Danke"], "answer": "Auf Wiedersehen"},
             {"type": "matching", "pairs": {"Tschüss": "Bye", "Bis bald": "See you soon"}},

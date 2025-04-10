@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const profileMenu = document.querySelector(".profile-menu");
     const profileDropdown = document.querySelector(".profile-dropdown");
     const profileIcon = document.querySelector(".profile-icon"); // Get profile icon too
+    const buyHeartsButton = document.querySelector('.buy-hearts-btn');    
 
     // --- Declare countdownInterval in the outer scope ---
     let countdownInterval = null;
@@ -415,6 +416,83 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
         });
+    }
+
+    if (buyHeartsButton) {
+        buyHeartsButton.addEventListener('click', handleBuyHeartsClick);
+    }    
+
+    async function handleBuyHeartsClick() {
+        console.log("Attempting to buy hearts...");
+        buyHeartsButton.disabled = true; // Prevent double clicks
+        buyHeartsButton.textContent = "Processing...";
+
+        try {
+            const response = await fetch('/shop/buy_hearts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest' // Good practice for backend differentiation
+                    // Add CSRF token if needed
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                console.log("Purchase successful:", data);
+                flashMessage("Hearts refilled successfully!", "success"); // Use flash or toast
+
+                // Update UI immediately
+                updateHeartsDisplay(data.new_hearts, data.time_left); // Update hearts display and timer (will hide timer)
+                updateGemsDisplay(data.new_gems); // Update gem display (needs implementation)
+
+                // Hide the "out of hearts" alert
+                const heartsAlert = document.querySelector('.hearts-alert');
+                if (heartsAlert) heartsAlert.remove(); // Remove the alert element
+
+                // Re-enable/re-render lesson links (Important!)
+                // Easiest might be to just re-fetch and re-render the lessons
+                fetchLessons(selectedLanguage);
+                // Or, manually remove 'locked' class and update hrefs if not already done by renderLessons
+
+            } else {
+                console.error("Purchase failed:", data.error);
+                flashMessage(data.error || "Could not buy hearts.", "danger"); // Show error
+            }
+
+        } catch (error) {
+            console.error("Network error buying hearts:", error);
+            flashMessage("Network error. Please try again.", "danger");
+        } finally {
+            // Re-enable button even if error, unless it was removed
+             if (buyHeartsButton && !buyHeartsButton.closest('body')) { // Check if still in DOM
+                 // Button was likely removed with the alert, do nothing
+             } else if (buyHeartsButton) {
+                 buyHeartsButton.disabled = false;
+                 buyHeartsButton.textContent = "Buy Hearts";
+             }
+        }
+    }
+
+    // --- NEW: Helper to update gems display ---
+    function updateGemsDisplay(newGemsCount) {
+        const gemsCountSpan = document.querySelector('.gems-container .gems-count');
+        if (gemsCountSpan) {
+            gemsCountSpan.textContent = newGemsCount;
+        }
+    }
+
+     // --- NEW/MODIFY: Flash Message or Toast Notification ---
+    function flashMessage(message, category = 'info') {
+         // Use your existing showErrorToast or implement a similar function
+         // that can handle different categories (info, success, danger, warning)
+         // For simplicity, using console log and the basic error toast for errors:
+         console.log(`Flash [${category}]: ${message}`);
+         if (category === 'danger' || category === 'warning') {
+              showErrorToast(message); // Reuse existing toast for errors
+         }
+         // Add logic here to display success/info messages if needed
     }
 
     // Close dropdowns if clicking outside
